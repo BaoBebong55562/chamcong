@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ứng Dụng Chấm Công Offline</title>
+  <style>
+    /* Reset & base */
+    * { box-sizing: border-box; }
+    html,body { height:100%; margin:0; font-family: Inter, Roboto, "Helvetica Neue", Arial; background:#f3f6f9; color:#1f2937; }
+    .container { max-width:1000px; margin:28px auto; background:#fff; border-radius:12px; box-shadow:0 8px 24px rgba(20,20,30,0.06); padding:20px; }
+    h1,h2,h3 { margin:0 0 12px 0; }
+    /* Login view */
+    #loginView { display:flex; align-items:center; justify-content:center; min-height:60vh; }
+    .card { width:100%; max-width:420px; padding:24px; border-radius:10px; background:linear-gradient(180deg,#ffffff 0%, #fbfdff 100%); box-shadow:0 6px 18px rgba(18,36,70,0.06); border:1px solid #eef2f7; }
+    label { display:block; font-size:14px; margin-bottom:6px; color:#374151; }
+    input[type="text"], input[type="password"], input[type="number"], select, input[type="date"], input[type="time"] {
+      width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6eef6; background:#fff; font-size:14px; margin-bottom:12px;
+    }
+    button { padding:10px 14px; border-radius:10px; border:0; font-weight:600; cursor:pointer; }
+    .btn-primary { background:#0ea5a4; color:white; box-shadow:0 6px 12px rgba(14,165,164,0.12); }
+    .btn-ghost { background:transparent; color:#0f172a; border:1px solid #e6eef6; }
+    .btn-danger { background:#ef4444; color:white; }
+    .center { text-align:center; }
+    .muted { color:#6b7280; font-size:13px; }
+    nav.navbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+    .nav-left { display:flex; align-items:center; gap:12px; }
+    .tabs { display:flex; gap:8px; }
+    .tab-btn { padding:8px 12px; border-radius:8px; background:transparent; border:1px solid transparent; cursor:pointer; font-weight:600; }
+    .tab-btn.active { background:#0ea5a4; color:white; }
+    .greeting { font-weight:700; font-size:16px; color:#0f172a; }
+    .grid { display:grid; grid-template-columns:1fr 380px; gap:18px; align-items:start; }
+    .card-section { padding:16px; border-radius:10px; background:#ffffff; border:1px solid #eef2f7; }
+    .big-btn { display:block; width:100%; padding:18px; font-size:20px; border-radius:12px; font-weight:800; }
+    .stats { margin-top:12px; font-size:14px; }
+    form.inline { display:flex; gap:8px; align-items:center; }
+    .small { font-size:13px; color:#374151; }
+    table { width:100%; border-collapse:collapse; margin-top:12px; font-size:14px; }
+    th, td { padding:10px 8px; border-bottom:1px solid #eef2f7; text-align:left; }
+    th { background:#fbfdff; font-weight:700; color:#0f172a; }
+    tfoot td { font-weight:800; background:#f8fafc; }
+    .muted-sm { color:#6b7280; font-size:12px; }
+    .right { text-align:right; }
+    /* responsive */
+    @media (max-width:920px) {
+      .grid { grid-template-columns:1fr; }
+      .container { margin:12px; }
+    }
+    .clickable { cursor:pointer; }
+    .topbar-right { display:flex; gap:8px; align-items:center; }
+    .hint { font-size:12px; color:#6b7280; margin-top:-6px; }
+    .danger { color:#b91c1c; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- LOGIN VIEW -->
+    <div id="loginView">
+      <div class="card" role="main" aria-labelledby="loginTitle">
+        <h1 id="loginTitle">Đăng Nhập hoặc Đăng Ký</h1>
+        <p class="muted">Ứng Dụng Chấm Công Offline — dữ liệu lưu cục bộ trên trình duyệt.</p>
+        <form id="loginForm">
+          <label for="username">Tên đăng nhập</label>
+          <input id="username" type="text" autocomplete="username" required placeholder="ví dụ: nguyen.bao" />
+          <label for="password">Mật khẩu (đơn giản)</label>
+          <input id="password" type="password" autocomplete="current-password" required placeholder="mật khẩu" />
+          <div style="display:flex;gap:10px;margin-top:6px;">
+            <button class="btn-primary" type="submit">Đăng Nhập / Đăng Ký</button>
+            <button class="btn-ghost" type="button" id="clearDataBtn" title="Xóa toàn bộ dữ liệu (cục bộ)">Xóa dữ liệu</button>
+          </div>
+          <p class="hint">Nếu tên người dùng chưa tồn tại, hệ thống sẽ tự tạo tài khoản mới với mức lương mặc định.</p>
+        </form>
+      </div>
+    </div>
+
+    <!-- APP VIEW -->
+    <div id="appView" style="display:none;">
+      <nav class="navbar">
+        <div class="nav-left">
+          <div class="greeting" id="greeting">Xin chào!</div>
+          <div class="tabs" role="tablist" aria-label="Các tab">
+            <button class="tab-btn active" id="tabDashboardBtn">Dashboard</button>
+            <button class="tab-btn" id="tabReportBtn">Báo Cáo</button>
+            <button class="tab-btn" id="tabSettingsBtn">Cài Đặt</button>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="muted-sm" id="currentWageText">Lương: — VNĐ/giờ</div>
+          <button class="btn-ghost" id="logoutBtn">Đăng Xuất</button>
+        </div>
+      </nav>
+
+      <div id="tabsContent">
+        <!-- DASHBOARD -->
+        <div id="dashboardTab" class="card-section">
+          <div class="grid">
+            <div>
+              <h2>Trạng thái chấm công</h2>
+              <p class="muted-sm" id="statusText">Bạn chưa chấm công.</p>
+              <button id="checkBtn" class="big-btn btn-primary">CHECK-IN</button>
+
+              <div class="stats" id="quickStats">
+                <div>Tổng thu nhập tháng này: <strong id="monthEarnings">0 VNĐ</strong></div>
+                <div>Tổng giờ tháng này: <strong id="monthHours">0 giờ</strong></div>
+              </div>
+
+              <hr style="margin:14px 0;border:none;border-top:1px solid #eef2f7;">
+
+              <h3>Thêm ca làm thủ công</h3>
+              <form id="manualLogForm">
+                <label>Ngày</label>
+                <input id="manualDate" type="date" required />
+                <div style="display:flex;gap:8px;">
+                  <div style="flex:1;">
+                    <label>Giờ bắt đầu</label>
+                    <input id="manualStart" type="time" required />
+                  </div>
+                  <div style="flex:1;">
+                    <label>Giờ kết thúc</label>
+                    <input id="manualEnd" type="time" required />
+                  </div>
+                </div>
+                <div style="margin-top:8px;display:flex;gap:8px;">
+                  <button class="btn-primary" type="submit">Thêm</button>
+                  <button class="btn-ghost" type="button" id="clearManual">Xóa</button>
+                </div>
+                <p class="hint">Ca thủ công cho phép bạn thêm một ca đã làm trước đó.</p>
+              </form>
+            </div>
+
+            <div>
+              <h3>Danh sách ca gần đây</h3>
+              <div id="recentLogsContainer" style="max-height:360px; overflow:auto;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPORT -->
+        <div id="reportTab" class="card-section" style="display:none;">
+          <h2>Báo Cáo</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <label class="small" for="reportMonth">Tháng</label>
+            <select id="reportMonth"></select>
+            <label class="small" for="reportYear">Năm</label>
+            <select id="reportYear"></select>
+            <button class="btn-primary" id="refreshReportBtn">Xem</button>
+          </div>
+
+          <div id="reportTableContainer"></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settingsTab" class="card-section" style="display:none;">
+          <h2>Cài Đặt</h2>
+          <p class="small">Mức lương hiện tại: <strong id="currentWageDisplay">— VNĐ/giờ</strong></p>
+          <form id="wageForm" style="max-width:360px;">
+            <label for="newWage">Mức lương mới theo giờ (VNĐ)</label>
+            <input id="newWage" type="number" min="0" required />
+            <div style="display:flex;gap:8px;">
+              <button class="btn-primary" type="submit">Lưu thay đổi</button>
+              <button class="btn-ghost" type="button" id="resetWageBtn">Đặt mặc định</button>
+            </div>
+            <p class="hint">Lưu ý: thay đổi mức lương chỉ áp dụng cho các ca tính từ lúc lưu.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*****************************************************************
+     * Ứng Dụng Chấm Công Offline - Một file index.html duy nhất
+     * Dữ liệu lưu ở localStorage key = 'chamCongApp'
+     *****************************************************************/
+
+    // ---------- Storage key ----------
+    const STORAGE_KEY = 'chamCongApp';
+    const DEFAULT_HOURLY_WAGE = 25000; // VNĐ/giờ mặc định
+
+    // ---------- App state ----------
+    let appData = null; // sẽ chứa toàn bộ object từ localStorage
+
+    // ---------- Utility helpers ----------
+    function loadData() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          appData = JSON.parse(raw);
+          // basic validation/fix
+          if (!appData.users) appData.users = {};
+          if (!('currentUser' in appData)) appData.currentUser = null;
+        } catch (e) {
+          console.error('Lỗi khi đọc dữ liệu, tạo mới:', e);
+          appData = { currentUser: null, users: {} };
+          saveData();
+        }
+      } else {
+        appData = { currentUser: null, users: {} };
+        saveData();
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function formatCurrency(v) {
+      if (!isFinite(v)) return '0 VNĐ';
+      return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' VNĐ';
+    }
+
+    function formatDateTimeLocal(iso) {
+      if (!iso) return '-';
+      const d = new Date(iso);
+      if (isNaN(d)) return '-';
+      return d.toLocaleString('vi-VN', { hour12:false });
+    }
+
+    function formatDateLocal(iso) {
+      const d = new Date(iso);
+      if (isNaN(d)) return '-';
+      return d.toLocaleDateString('vi-VN');
+    }
+
+    function hoursBetween(startIso, endIso) {
+      const s = new Date(startIso);
+      const e = new Date(endIso);
+      if (isNaN(s) || isNaN(e)) return 0;
+      const hours = (e - s) / (1000 * 60 * 60);
+      return Math.max(0, Math.round(hours * 100) / 100); // 2 decimals
+    }
+
+    // ---------- User helpers ----------
+    function getCurrentUserName() {
+      return appData && appData.currentUser ? appData.currentUser : null;
+    }
+
+    function getUserData(username) {
+      if (!username || !appData.users[username]) return null;
+      return appData.users[username];
+    }
+
+    function ensureUser(username) {
+      if (!appData.users[username]) {
+        appData.users[username] = {
+          password: '',
+          hourlyWage: DEFAULT_HOURLY_WAGE,
+          timeLogs: []
+        };
+      }
+    }
+
+    // ---------- UI management ----------
+    function showView(viewId) {
+      // views: loginView, appView
+      ['loginView','appView'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === viewId) ? '' : 'none';
+      });
+    }
+
+    function showTab(tabId) {
+      // tabId: dashboardTab, reportTab, settingsTab
+      ['dashboardTab','reportTab','settingsTab'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === tabId) ? '' : 'none';
+      });
+      // set tab active style
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      if (tabId === 'dashboardTab') document.getElementById('tabDashboardBtn').classList.add('active');
+      if (tabId === 'reportTab') document.getElementById('tabReportBtn').classList.add('active');
+      if (tabId === 'settingsTab') document.getElementById('tabSettingsBtn').classList.add('active');
+    }
+
+    function updateUI() {
+      // If no user logged -> show login
+      const current = getCurrentUserName();
+      if (!current) {
+        showView('loginView');
+        return;
+      }
+      // show app
+      showView('appView');
+      // greeting & wage
+      document.getElementById('greeting').textContent = `Xin chào, ${current}!`;
+      const ud = getUserData(current);
+      document.getElementById('currentWageText').textContent = `Lương: ${formatCurrency(ud.hourlyWage).replace(' VNĐ','')}/giờ`.replace(/\s$/, '') + ' VNĐ/giờ';
+      document.getElementById('currentWageDisplay').textContent = `${formatCurrency(ud.hourlyWage).replace(' VNĐ','')} VNĐ/giờ`;
+
+      // check-in state
+      const lastLog = ud.timeLogs.length ? ud.timeLogs[ud.timeLogs.length - 1] : null;
+      const isCheckedIn = lastLog && !lastLog.checkOutTime;
+      const checkBtn = document.getElementById('checkBtn');
+      const statusText = document.getElementById('statusText');
+      if (isCheckedIn) {
+        checkBtn.textContent = 'CHECK-OUT';
+        checkBtn.classList.remove('btn-primary');
+        checkBtn.classList.add('btn-danger');
+        statusText.textContent = `Đang làm từ: ${formatDateTimeLocal(lastLog.checkInTime)}`;
+      } else {
+        checkBtn.textContent = 'CHECK-IN';
+        checkBtn.classList.remove('btn-danger');
+        checkBtn.classList.add('btn-primary');
+        statusText.textContent = `Bạn chưa chấm công.`;
+      }
+
+      // Quick stats for current month
+      const now = new Date();
+      const month = now.getMonth(); // 0-index
+      const year = now.getFullYear();
+      const { totalHours, totalEarnings } = calcMonthStats(ud.timeLogs, month, year, ud.hourlyWage);
+      document.getElementById('monthEarnings').textContent = formatCurrency(Math.round(totalEarnings));
+      document.getElementById('monthHours').textContent = `${totalHours} giờ`;
+
+      // Recent logs
+      renderRecentLogs(ud.timeLogs);
+
+      // populate report month/year selects
+      populateReportPeriodSelector();
+
+      saveData();
+    }
+
+    // ---------- Recent logs rendering ----------
+    function renderRecentLogs(timeLogs) {
+      const container = document.getElementById('recentLogsContainer');
+      container.innerHTML = '';
+      if (!timeLogs || !timeLogs.length) {
+        container.innerHTML = '<p class="muted-sm">Chưa có ca làm nào.</p>';
+        return;
+      }
+      // show latest 12 logs descending
+      const rows = timeLogs.slice().reverse().slice(0,12);
+      const ul = document.createElement('div');
+      ul.style.display = 'grid';
+      ul.style.gap = '10px';
+      rows.forEach(log => {
+        const box = document.createElement('div');
+        box.style.padding = '10px';
+        box.style.border = '1px solid #eef2f7';
+        box.style.borderRadius = '8px';
+        const date = formatDateLocal(log.checkInTime);
+        const inT = formatDateTimeLocal(log.checkInTime);
+        const outT = log.checkOutTime ? formatDateTimeLocal(log.checkOutTime) : '<span class="muted-sm">Đang làm</span>';
+        const hours = (log.checkOutTime) ? hoursBetween(log.checkInTime, log.checkOutTime) : '-';
+        const earn = log.earnings ? formatCurrency(log.earnings) : '-';
+        box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700">${date}</div>
+            <div class="muted-sm">${inT} → ${outT}</div>
+          </div>
+          <div style="text-align:right;">
+            <div>${hours} giờ</div>
+            <div class="muted-sm">${earn}</div>
+          </div>
+        </div>`;
+        ul.appendChild(box);
+      });
+      container.appendChild(ul);
+    }
+
+    // ---------- Calculations ----------
+    function calcMonthStats(timeLogs, monthZeroBased, year, hourlyWage) {
+      let totalHours = 0;
+      let totalEarnings = 0;
+      (timeLogs || []).forEach(log => {
+        if (!log.checkOutTime) return;
+        const d = new Date(log.checkInTime);
+        if (d.getMonth() === monthZeroBased && d.getFullYear() === year) {
+          const h = hoursBetween(log.checkInTime, log.checkOutTime);
+          totalHours += h;
+          // prefer saved earnings if exists
+          const e = (typeof log.earnings === 'number' && isFinite(log.earnings)) ? log.earnings : Math.round(h * hourlyWage);
+          totalEarnings += e;
+        }
+      });
+      totalHours = Math.round(totalHours * 100) / 100;
+      return { totalHours, totalEarnings };
+    }
+
+    // ---------- Auth (login/register) ----------
+    function handleLoginRegister(evt) {
+      evt.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      if (!username) return alert('Vui lòng nhập tên đăng nhập.');
+      // simple sanitize: no spaces
+      const safeUsername = username.replace(/\s+/g, '.');
+      // existing?
+      if (appData.users[safeUsername]) {
+        // check password
+        if (appData.users[safeUsername].password === password) {
+          appData.currentUser = safeUsername;
+          saveData();
+          updateUI();
+        } else {
+          alert('Mật khẩu không đúng.');
+        }
+      } else {
+        // create new user
+        appData.users[safeUsername] = {
+          password: password,
+          hourlyWage: DEFAULT_HOURLY_WAGE,
+          timeLogs: []
+        };
+        appData.currentUser = safeUsername;
+        saveData();
+        alert(`Tài khoản mới được tạo: ${safeUsername}\nMức lương mặc định: ${formatCurrency(DEFAULT_HOURLY_WAGE)}`);
+        updateUI();
+      }
+      // clear password field for safety
+      document.getElementById('password').value = '';
+    }
+
+    function logout() {
+      if (!confirm('Bạn có chắc muốn đăng xuất không?')) return;
+      appData.currentUser = null;
+      saveData();
+      updateUI();
+    }
+
+    // ---------- Check-in / Check-out ----------
+    function checkIn() {
+      const username = getCurrentUserName();
+      if (!username) return alert('Chưa đăng nhập.');
+      const ud = getUserData(username);
+      // create log
+      const nowIso = new Date().toISOString();
+      const newLog = {
+        id: Date.now().toString(),
+        checkInTime: nowIso,
+        checkOutTime: null,
+        earnings: null
+      };
+      ud.timeLogs.push(newLog);
+      saveData();
+      updateUI();
+    }
+
+    function checkOut() {
+      const username = getCurrentUserName();
+      if (!username) return alert('Chưa đăng nhập.');
+      const ud = getUserData(username);
+      // find last open log
+      for (let i = ud.timeLogs.length - 1; i >= 0; i--) {
+        const log = ud.timeLogs[i];
+        if (!log.checkOutTime) {
+          const nowIso = new Date().toISOString();
+          log.checkOutTime = nowIso;
+          const h = hoursBetween(log.checkInTime, log.checkOutTime);
+          log.earnings = Math.round(h * ud.hourlyWage);
+          saveData();
+          updateUI();
+          return;
+        }
+      }
+      alert('Không tìm thấy bản ghi đang làm việc để CHECK-OUT.');
+    }
+
+    // ---------- Manual log ----------
+    function addManualLog(evt) {
+      evt.preventDefault();
+      const username = getCurrentUserName();
+      if (!username) return alert('Chưa đăng nhập.');
+      const ud = getUserData(username);
+      const date = document.getElementById('manualDate').value;
+      const start = document.getElementById('manualStart').value;
+      const end = document.getElementById('manualEnd').value;
+      if (!date || !start || !end) return alert('Vui lòng nhập đủ ngày giờ.');
+      // create ISO strings in local timezone. Combine date + time => construct Date
+      const startIso = new Date(date + 'T' + start + ':00').toISOString();
+      const endIso = new Date(date + 'T' + end + ':00').toISOString();
+      if (new Date(endIso) <= new Date(startIso)) return alert('Giờ kết thúc phải lớn hơn giờ bắt đầu.');
+      const h = hoursBetween(startIso, endIso);
+      const earnings = Math.round(h * ud.hourlyWage);
+      const log = {
+        id: Date.now().toString(),
+        checkInTime: startIso,
+        checkOutTime: endIso,
+        earnings: earnings
+      };
+      ud.timeLogs.push(log);
+      saveData();
+      // clear form
+      document.getElementById('manualLogForm').reset();
+      updateUI();
+    }
+
+    // ---------- Wage update ----------
+    function updateWage(evt) {
+      evt.preventDefault();
+      const username = getCurrentUserName();
+      if (!username) return alert('Chưa đăng nhập.');
+      const ud = getUserData(username);
+      const newWageVal = Number(document.getElementById('newWage').value);
+      if (!isFinite(newWageVal) || newWageVal < 0) return alert('Mức lương không hợp lệ.');
+      ud.hourlyWage = Math.round(newWageVal);
+      saveData();
+      alert('Cập nhật mức lương thành công.');
+      updateUI();
+    }
+
+    function resetWageToDefault() {
+      const username = getCurrentUserName();
+      if (!username) return;
+      if (!confirm('Đặt mức lương về mặc định?')) return;
+      const ud = getUserData(username);
+      ud.hourlyWage = DEFAULT_HOURLY_WAGE;
+      saveData();
+      updateUI();
+    }
+
+    // ---------- Report generation ----------
+    function populateReportPeriodSelector() {
+      const monthEl = document.getElementById('reportMonth');
+      const yearEl = document.getElementById('reportYear');
+      // months 1..12
+      const months = [
+        '1 - Tháng 1','2 - Tháng 2','3 - Tháng 3','4 - Tháng 4','5 - Tháng 5','6 - Tháng 6',
+        '7 - Tháng 7','8 - Tháng 8','9 - Tháng 9','10 - Tháng 10','11 - Tháng 11','12 - Tháng 12'
+      ];
+      monthEl.innerHTML = months.map((m,idx)=> `<option value="${idx}">${m}</option>`).join('');
+      // years - pick range currentYear-5 .. currentYear+1
+      const now = new Date();
+      const cy = now.getFullYear();
+      const years = [];
+      for (let y = cy - 5; y <= cy + 1; y++) years.push(y);
+      yearEl.innerHTML = years.map(y=> `<option value="${y}">${y}</option>`).join('');
+      // default selects to current month/year
+      monthEl.value = now.getMonth();
+      yearEl.value = now.getFullYear();
+    }
+
+    function generateReport() {
+      const username = getCurrentUserName();
+      if (!username) return alert('Chưa đăng nhập.');
+      const ud = getUserData(username);
+      const month = Number(document.getElementById('reportMonth').value); // 0-index
+      const year = Number(document.getElementById('reportYear').value);
+      // filter logs by month/year based on checkInTime
+      const logs = (ud.timeLogs || []).filter(l => {
+        if (!l.checkInTime) return false;
+        const d = new Date(l.checkInTime);
+        return d.getMonth() === month && d.getFullYear() === year;
+      }).sort((a,b)=> new Date(a.checkInTime) - new Date(b.checkInTime));
+
+      // build table
+      const container = document.getElementById('reportTableContainer');
+      container.innerHTML = '';
+      if (!logs.length) {
+        container.innerHTML = `<p class="muted-sm">Không có ca làm trong tháng ${month+1}/${year}.</p>`;
+        return;
+      }
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      thead.innerHTML = `<tr>
+        <th>Ngày</th><th>Check-in</th><th>Check-out</th><th class="right">Số giờ</th><th class="right">Lương</th>
+      </tr>`;
+      table.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      let totalHours = 0, totalEarnings = 0;
+      logs.forEach(log => {
+        const hours = (log.checkOutTime) ? hoursBetween(log.checkInTime, log.checkOutTime) : 0;
+        const earning = (typeof log.earnings === 'number' && isFinite(log.earnings)) ? log.earnings : Math.round(hours * ud.hourlyWage);
+        totalHours += hours;
+        totalEarnings += earning;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${formatDateLocal(log.checkInTime)}</td>
+          <td>${formatDateTimeLocal(log.checkInTime)}</td>
+          <td>${log.checkOutTime ? formatDateTimeLocal(log.checkOutTime) : '-'}</td>
+          <td class="right">${hours}</td>
+          <td class="right">${formatCurrency(earning)}</td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      const tfoot = document.createElement('tfoot');
+      tfoot.innerHTML = `<tr><td colspan="3" class="right">Tổng cộng:</td>
+        <td class="right">${Math.round(totalHours * 100) / 100} giờ</td>
+        <td class="right">${formatCurrency(Math.round(totalEarnings))}</td></tr>`;
+      table.appendChild(tfoot);
+      container.appendChild(table);
+    }
+
+    // ---------- UI Actions binding ----------
+    document.addEventListener('DOMContentLoaded', () => {
+      // load data
+      loadData();
+
+      // set initial view based on login
+      if (appData.currentUser) {
+        showView('appView');
+      } else {
+        showView('loginView');
+      }
+
+      // bind login form
+      document.getElementById('loginForm').addEventListener('submit', handleLoginRegister);
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+      document.getElementById('checkBtn').addEventListener('click', () => {
+        const username = getCurrentUserName();
+        if (!username) return alert('Chưa đăng nhập.');
+        const ud = getUserData(username);
+        const lastLog = ud.timeLogs.length ? ud.timeLogs[ud.timeLogs.length - 1] : null;
+        const isCheckedIn = lastLog && !lastLog.checkOutTime;
+        if (isCheckedIn) checkOut(); else checkIn();
+      });
+
+      // manual log
+      document.getElementById('manualLogForm').addEventListener('submit', addManualLog);
+      document.getElementById('clearManual').addEventListener('click', () => document.getElementById('manualLogForm').reset());
+
+      // tabs
+      document.getElementById('tabDashboardBtn').addEventListener('click', () => { showTab('dashboardTab'); });
+      document.getElementById('tabReportBtn').addEventListener('click', () => { showTab('reportTab'); generateReport(); });
+      document.getElementById('tabSettingsBtn').addEventListener('click', () => { showTab('settingsTab'); });
+
+      // wage form
+      document.getElementById('wageForm').addEventListener('submit', updateWage);
+      document.getElementById('resetWageBtn').addEventListener('click', resetWageToDefault);
+
+      // report controls
+      document.getElementById('refreshReportBtn').addEventListener('click', generateReport);
+
+      // clear data button (dangerous - for testing)
+      document.getElementById('clearDataBtn').addEventListener('click', () => {
+        if (!confirm('Xóa toàn bộ dữ liệu ứng dụng trên trình duyệt? (không thể hoàn tác)')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        loadData();
+        updateUI();
+        showView('loginView');
+        alert('Đã xóa dữ liệu cục bộ.');
+      });
+
+      // initialize UI
+      updateUI();
+    });
+
+    // ---------- Extra: utility to export/import (not required but helpful) ----------
+    // (Not wired to UI by default, but developers can call from console)
+    function exportData() { return JSON.stringify(appData, null, 2); }
+    function importData(jsonString) {
+      try {
+        const obj = JSON.parse(jsonString);
+        appData = obj;
+        saveData();
+        updateUI();
+        return true;
+      } catch (e) {
+        console.error('Import lỗi', e);
+        return false;
+      }
+    }
+
+    // Expose small API for debugging from console window.app
+    window.app = {
+      loadData, saveData, exportData, importData, getAppData: () => appData
+    };
+  </script>
+</body>
+</html>
