@@ -1,1066 +1,1304 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ứng Dụng Chấm Công</title>
   <style>
-    /* CSS Variables for theming */
     :root {
-      --font-family: 'Segoe UI', system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-      --primary: #0ea5a4;
-      --primary-hover: #0d9488;
-      --danger: #e11d48;
-      --danger-hover: #be123c;
-      --bg-light: #f8fafc;
-      --bg-dark: #0f172a;
-      --surface-light: #ffffff;
-      --surface-dark: #1e293b;
-      --text-light: #0f172a;
-      --text-dark: #f1f5f9;
-      --text-muted-light: #64748b;
-      --text-muted-dark: #94a3b8;
-      --border-light: #e2e8f0;
-      --border-dark: #334155;
-      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      --radius: 8px;
+      --primary: #2a7ade;
+      --primary-600: #1f5fb0;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #e2e8f0;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius: 12px;
     }
-
-    /* Base styles */
+    [data-theme="dark"] {
+      --primary: #60a5fa;
+      --primary-600: #3b82f6;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --bg: #0b1220;
+      --card: #0f172a;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: #1f2940;
+      --shadow: 0 8px 24px rgba(0,0,0,0.45);
+    }
     * { box-sizing: border-box; }
-    html { font-size: 16px; }
-    body {
-      margin: 0;
-      font-family: var(--font-family);
-      background: var(--bg-light);
-      color: var(--text-light);
-      transition: background 0.3s, color 0.3s;
-    }
-
-    /* Dark Mode */
-    .dark body {
-      background: var(--bg-dark);
-      color: var(--text-dark);
-    }
-    .dark .card, .dark .card-section, .dark .modal {
-      background: var(--surface-dark);
-      border-color: var(--border-dark);
-      color: var(--text-dark);
-    }
-    .dark input, .dark select, .dark textarea {
-      background: var(--bg-dark);
-      color: var(--text-dark);
-      border-color: var(--border-dark);
-    }
-    .dark .btn-ghost { color: var(--text-dark); border-color: var(--border-dark); }
-    .dark .btn-ghost:hover { background: rgba(255,255,255,0.05); }
-    .dark th { background: #283446; }
-    .dark tfoot td { background: var(--bg-dark); }
-    .dark tbody tr:nth-child(even) { background: #1a2434; }
-    .dark .muted-italic, .dark .muted, .dark .muted-sm, .dark .hint, .dark .note-small { color: var(--text-muted-dark); }
-    .dark .highlight-total { background: #2a3b52 !important; }
-
-    /* Layout */
-    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-    .grid { display: grid; grid-template-columns: 1fr 420px; gap: 1.5rem; align-items: start; }
-    @media (max-width: 960px) {
-      .grid { grid-template-columns: 1fr; }
-      .container { margin: 1rem auto; }
-    }
-
-    /* Components */
-    h1,h2,h3 { margin: 0 0 1rem 0; font-weight: 700; color: inherit; }
-    h1 { font-size: 1.75rem; }
-    h2 { font-size: 1.5rem; }
-    h3 { font-size: 1.25rem; }
-    .card, .card-section {
-      background: var(--surface-light);
-      border: 1px solid var(--border-light);
+    html, body { margin:0; padding:0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    a { color: var(--primary); text-decoration: none; }
+    .container { max-width: 1100px; margin: 96px auto 48px; padding: 0 16px; }
+    .center { text-align: center; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 1.5rem;
+      padding: 20px;
     }
-    label { display: block; font-size: 0.875rem; margin-bottom: 0.375rem; font-weight: 500; color: var(--text-muted-light); }
-    input[type="text"], input[type="password"], input[type="number"], select, input[type="date"], input[type="time"], textarea {
-      width: 100%;
-      padding: 0.625rem 0.75rem;
-      border-radius: var(--radius);
-      border: 1px solid var(--border-light);
-      background: var(--surface-light);
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      transition: border-color .2s, box-shadow .2s;
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* Navbar fixed */
+    .navbar {
+      position: fixed; top:0; left:0; right:0; z-index: 10;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 6px 18px rgba(15,23,42,0.06);
     }
-    input:focus, select:focus, textarea:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px; justify-content: space-between;
     }
-    button, .btn {
-      padding: 0.625rem 1rem;
-      border-radius: var(--radius);
-      border: 0;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background-color 0.2s, transform 0.1s;
+    .brand { font-weight: 700; color: var(--primary); letter-spacing: .3px; }
+    .nav-left, .nav-right { display: flex; align-items: center; gap: 8px; }
+    .tabs button {
+      padding: 10px 14px; border-radius: 999px; border: 1px solid var(--border);
+      background: transparent; color: var(--text); cursor: pointer;
     }
-    button:active, .btn:active { transform: translateY(1px); }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-danger:hover { background: var(--danger-hover); }
-    .btn-ghost { background: transparent; color: var(--text-light); border: 1px solid var(--border-light); }
-    .btn-ghost:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); border-color: color-mix(in srgb, var(--primary) 50%, transparent); }
-    .btn-small { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
-    .btn-icon { padding: 0.5rem; line-height: 0; }
-    .big-btn { padding: 1rem; font-size: 1.25rem; font-weight: 700; }
+    .tabs button.active { background: var(--primary); border-color: var(--primary); color: white; }
+    .greeting { color: var(--muted); margin-right: 8px; }
 
-    /* Login View */
-    #loginView { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
-    #loginView .card { width: 100%; max-width: 420px; }
+    /* Inputs & Buttons */
+    .row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .field { flex: 1; min-width: 200px; }
+    .field label { display:block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .input, select, textarea {
+      width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+      background: transparent; color: var(--text);
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    .btn {
+      padding: 12px 16px; border-radius: 10px; border: 1px solid transparent; cursor: pointer;
+      background: var(--primary); color: #fff; box-shadow: var(--shadow);
+      transition: transform .03s ease-in-out;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
+    .btn-green { background: var(--accent); }
+    .btn-red { background: var(--danger); }
+    .btn-muted { background: #e5e7eb; color: #111827; border: 1px solid #cbd5e1; }
+    [data-theme="dark"] .btn-muted { background: #1f2937; color: #e5e7eb; border-color: #334155; }
 
-    /* App View: Navbar (fixed) */
-    .navbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding: 0.75rem; border-radius: var(--radius); background: var(--surface-light); border:1px solid var(--border-light); box-shadow: var(--shadow); position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 2rem); max-width: 1200px; z-index: 50; }
-    /* Push app content below navbar */
-    #appView { padding-top: 4.5rem; }
+    /* Status */
+    .status {
+      display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px;
+      background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.25);
+      color: var(--text);
+    }
+    .status.off {
+      background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.22);
+    }
 
-    .nav-left, .topbar-right { display: flex; align-items: center; gap: 1rem; }
-    .tabs { display: flex; gap: 0.5rem; }
-    .tab-btn { padding: 0.5rem 1rem; background: transparent; border: 0; font-weight: 600; color: var(--text-muted-light); }
-    .tab-btn.active { color: var(--primary); box-shadow: 0 2px 0 var(--primary); border-radius: 4px 4px 0 0; }
-
-    /* Dashboard */
-    #statusText { font-weight: 500; font-size: 1.1rem; }
-    .stats { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; font-size: 0.9rem; }
-    .stats > div { background: var(--bg-light); padding: 0.75rem; border-radius: var(--radius); }
-    .dark .stats > div { background: var(--bg-dark); }
-    .stats strong { display: block; font-size: 1.2rem; color: var(--primary); font-weight: 700; }
-    #recentLogsContainer .log-item { display:flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: var(--radius); transition: background .2s; }
-    #recentLogsContainer .log-item:hover { background: var(--bg-light); }
-    .dark #recentLogsContainer .log-item:hover { background: var(--bg-dark); }
+    /* Stats */
+    .stat {
+      padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card);
+    }
+    .stat .label { color: var(--muted); font-size: 13px; }
+    .stat .value { font-size: 22px; font-weight: 700; margin-top: 6px; }
 
     /* Table */
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
-    th, td { padding: 0.75rem; border-bottom: 1px solid var(--border-light); text-align: left; }
-    th { background: var(--bg-light); font-weight: 600; color: var(--text-muted-light); text-transform: uppercase; font-size: 0.8rem; }
-    tfoot td { font-weight: 700; font-size: 1rem; background: color-mix(in srgb, var(--primary) 8%, transparent); }
-    tbody tr:nth-child(even) { background: var(--bg-light); }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 12px; }
+    thead { background: rgba(42,122,222,0.08); }
+    thead th { text-align: left; padding: 12px; font-weight: 700; color: var(--text); border-bottom: 1px solid var(--border); }
+    tbody td { padding: 12px; border-bottom: 1px solid var(--border); }
+    tbody tr:nth-child(odd) { background: rgba(148,163,184,0.06); }
+    tfoot td { padding: 14px; font-weight: 800; background: rgba(34, 197, 94, 0.12); border-top: 2px solid var(--border); }
+    .table-actions { display: flex; gap: 8px; }
+    .icon-col { width: 36px; text-align: center; opacity: .7; }
 
-    /* Modal */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(10, 10, 15, 0.6); display: none; align-items: center; justify-content: center; z-index: 60; backdrop-filter: blur(4px); }
-    .modal { width: 100%; max-width: 520px; background: var(--surface-light); padding: 1.5rem; border-radius: var(--radius); box-shadow: 0 12px 40px rgba(11, 22, 50, 0.2); border: 1px solid var(--border-light); }
+    /* Toast */
+    .toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.toast .item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 16px 20px;
+  border-radius: 12px;
+  min-width: 280px;
+  text-align: center;
+  font-weight: 600;
+}
 
-    /* Toast notifications */
-    .toast-wrap { position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 90; display: flex; flex-direction: column; gap: 0.5rem; }
-    .toast { background: color-mix(in srgb, var(--surface-dark) 95%, transparent); color: white; padding: 0.75rem 1rem; border-radius: var(--radius); box-shadow: var(--shadow); font-weight: 600; font-size: 0.9rem; opacity: 0; transform: translateY(8px); transition: all .2s ease; }
-    .toast.show { opacity: 1; transform: translateY(0); }
+    /* Progress bar */
+    .progress {
+      background: rgba(42,122,222,0.15); border-radius: 999px; height: 12px; overflow: hidden; border: 1px solid var(--border);
+    }
+    .progress > span {
+      display: block; height: 100%; background: var(--primary); width: 0%;
+      transition: width .3s ease;
+    }
 
-    /* Helpers */
-    .flex-row { display: flex; gap: 0.5rem; }
-    .flex-col { flex: 1; }
-    .muted { color: var(--text-muted-light); }
-    .muted-sm { color: var(--text-muted-light); font-size: 0.875rem; }
-    .hint { font-size: 0.8rem; color: var(--text-muted-light); margin-top: -0.5rem; margin-bottom: 1rem; }
-    .note-small { font-size: 0.8rem; color: var(--text-muted-light); margin-top: 0.25rem; }
-    hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-light); }
-    .text-right { text-align: right; }
-    .delete-icon { width: 16px; height: 16px; vertical-align: middle; }
+    /* Alert reminder */
+    .reminder {
+      padding: 12px 14px; border: 1px dashed var(--danger); color: var(--text);
+      background: rgba(239, 68, 68, 0.08); border-radius: 12px;
+    }
+
+    /* Login screen */
+    .login-wrap { max-width: 420px; margin: 0 auto; }
+    .title { font-size: 26px; font-weight: 800; margin: 8px 0 18px; }
+    .subtitle { color: var(--muted); margin-bottom: 16px; }
+    .spacer { height: 8px; }
+
+    /* Small text */
+    .muted { color: var(--muted); font-size: 13px; }
+
+    /* Canvas wrap */
+    .canvas-wrap { width: 100%; overflow-x: auto; padding-bottom: 6px; }
+    canvas { max-width: 100%; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+
+    /* Switch */
+    .switch {
+      position: relative; display: inline-block; width: 46px; height: 26px;
+    }
+    .switch input { display:none; }
+    .slider {
+      position: absolute; cursor: pointer; top:0; left:0; right:0; bottom:0;
+      background-color:#cbd5e1; transition:.2s; border-radius: 999px;
+    }
+    .slider:before {
+      position: absolute; content:""; height: 20px; width: 20px; left:3px; bottom:3px;
+      background:white; transition:.2s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    /* Responsive container */
+.container {
+  max-width: 1100px;
+  margin: 96px auto 48px;
+  padding: 0 16px;
+}
+@media (max-width: 768px) {
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .nav-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .btn, .input { font-size: 15px; padding: 10px 12px; }
+}
   </style>
 </head>
 <body>
-  <div class="container" id="appContainer">
-    <div id="loginView">
-      <div class="card" role="main" aria-labelledby="loginTitle">
-        <h1 id="loginTitle">Đăng Nhập / Đăng Ký</h1>
-        <p class="muted">Ứng Dụng Chấm Công Offline — dữ liệu lưu cục bộ trên trình duyệt.</p>
-        <form id="loginForm">
-          <label for="username">Tên đăng nhập</label>
-          <input id="username" type="text" autocomplete="username" required placeholder="ví dụ: nguyen.bao" />
-          <label for="password">Mật khẩu</label>
-          <input id="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
-          <div style="display:flex;gap:10px;margin-top:6px;">
-            <button class="btn-primary" type="submit">Đăng Nhập / Đăng Ký</button>
-            <button class="btn-ghost" type="button" id="clearDataBtn" title="Xóa toàn bộ dữ liệu (cục bộ)">Xóa dữ liệu</button>
-          </div>
-          <p class="hint" style="margin-top:1rem;">Nếu tên người dùng chưa tồn tại, hệ thống sẽ tự tạo tài khoản mới.</p>
-        </form>
-      </div>
-    </div>
 
-    <div id="appView" style="display:none;">
-      <nav class="navbar">
-        <div class="nav-left">
-          <div id="greeting" style="font-weight:600;">Xin chào!</div>
-          <div class="tabs" role="tablist">
-            <button class="tab-btn active" id="tabDashboardBtn">Dashboard</button>
-            <button class="tab-btn" id="tabReportBtn">Báo Cáo</button>
-            <button class="tab-btn" id="tabSettingsBtn">Cài Đặt</button>
-          </div>
+  <!-- Navbar (shown after login) -->
+  <div class="navbar" id="navbar" style="display:none;">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="brand">Chấm Công Offline</div>
+        <div class="greeting" id="greeting">Xin chào</div>
+        <div class="tabs">
+          <button id="tabDashboardBtn" class="active">Dashboard</button>
+          <button id="tabReportBtn">Báo Cáo</button>
+          <button id="tabSettingsBtn">Cài Đặt</button>
         </div>
-        <div class="topbar-right">
-          <div class="muted-sm" id="currentWageText">Lương: —</div>
-          <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;cursor:pointer;">
-            <input id="darkModeToggle" type="checkbox" /> Chế độ tối
+      </div>
+      <div class="nav-right">
+        <div class="row" style="align-items:center;">
+          <div class="muted">Dark mode</div>
+          <label class="switch">
+            <input type="checkbox" id="darkToggle" />
+            <span class="slider"></span>
           </label>
-          <button class="btn-ghost" id="logoutBtn">Đăng Xuất</button>
         </div>
-      </nav>
-
-      <div id="tabsContent">
-        <div id="dashboardTab">
-          <div class="grid">
-            <div class="card-section">
-              <h2>Trạng thái chấm công</h2>
-              <p id="statusText">Bạn chưa chấm công.</p>
-              <div style="display:flex;gap:1rem;align-items:center;margin-top:1rem;">
-                <button id="checkBtn" class="big-btn btn-primary">CHECK-IN</button>
-                <div style="display:flex;flex-direction:column;gap:0.5rem;width:220px;">
-                  <button id="backfillBtn" class="btn-ghost btn-small">Bù chấm công</button>
-                  <button id="quickCheckBtn" class="btn-ghost btn-small" title="Check-in/out theo giờ Việt Nam hiện tại">Check Nhanh (giờ VN)</button>
-                </div>
-              </div>
-              <div class="stats" id="quickStats">
-                <div>Giờ hôm nay<strong id="todayHours">0 giờ</strong></div>
-                <div>Giờ tuần này<strong id="weekHours">0 giờ</strong></div>
-                <div>Giờ tháng này<strong id="monthHours">0 giờ</strong></div>
-                <div>Thu nhập tháng<strong id="monthEarnings">0 VNĐ</strong></div>
-                <div style="grid-column: span 2;">
-                  Mục tiêu thu nhập tháng: <strong id="targetAmountDisplay" style="display:inline; color:inherit;">— VNĐ</strong>
-                  (<span id="targetPercent" style="font-weight:bold;">—%</span>)
-                </div>
-              </div>
-              <hr />
-              <h3>Thêm ca làm thủ công</h3>
-              <form id="manualLogForm">
-                <label for="manualDate">Ngày</label>
-                <input id="manualDate" type="date" required />
-                <div class="flex-row">
-                  <div class="flex-col">
-                    <label for="manualStart">Giờ bắt đầu</label>
-                    <input id="manualStart" type="time" required step="60" />
-                  </div>
-                  <div class="flex-col">
-                    <label for="manualEnd">Giờ kết thúc</label>
-                    <input id="manualEnd" type="time" required step="60" />
-                  </div>
-                </div>
-                <p class="hint">Sử dụng định dạng 24 giờ. Ví dụ: 12:00 - 17:30</p>
-                <label for="manualNote">Ghi chú (tuỳ chọn)</label>
-                <input id="manualNote" type="text" placeholder="Ví dụ: Hoàn thành nhiệm vụ X" />
-                <div style="margin-top:8px;display:flex;gap:8px;">
-                  <button class="btn-primary" type="submit">Thêm ca</button>
-                  <button class="btn-ghost" type="button" id="clearManual">Xóa</button>
-                </div>
-              </form>
-            </div>
-
-            <div class="card-section">
-              <h3>Ca làm gần đây</h3>
-              <div id="recentLogsContainer"></div>
-            </div>
-          </div>
-        </div>
-
-        <div id="reportTab" class="card-section" style="display:none;">
-          <h2>Báo Cáo Chi Tiết</h2>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
-            <label class="small" for="reportMonth">Tháng</label>
-            <select id="reportMonth"></select>
-            <label class="small" for="reportYear">Năm</label>
-            <select id="reportYear"></select>
-            <button class="btn-primary" id="refreshReportBtn">Xem báo cáo</button>
-            <button class="btn-ghost" id="exportCsvBtn" title="Xuất CSV báo cáo">Xuất CSV</button>
-            <button class="btn-ghost" id="exportXlsBtn" title="Xuất Excel (.xls)">Xuất Excel</button>
-          </div>
-          <div id="reportTableContainer"></div>
-        </div>
-
-        <div id="settingsTab" class="card-section" style="display:none;">
-          <h2>Cài Đặt</h2>
-          <p>Mức lương hiện tại: <strong id="currentWageDisplay">— VNĐ/giờ</strong></p>
-          <form id="wageForm" style="max-width:420px;">
-            <label for="newWage">Mức lương mới theo giờ (VNĐ)</label>
-            <input id="newWage" type="number" min="0" required placeholder="Nhập mức lương mới" />
-            <div class="flex-row">
-              <button class="btn-primary" type="submit">Lưu thay đổi</button>
-              <button class="btn-ghost" type="button" id="resetWageBtn">Đặt mặc định</button>
-            </div>
-            <p class="hint">Lưu ý: Mức lương mới chỉ áp dụng cho các ca làm việc sau khi lưu.</p>
-          </form>
-          <hr/>
-          <h3>Mục tiêu tháng</h3>
-           <div style="max-width:420px;">
-             <label for="targetAmountInput">Mục tiêu thu nhập cuối tháng (VNĐ)</label>
-             <input id="targetAmountInput" type="number" min="0" placeholder="Ví dụ: 4000000" />
-             <div class="flex-row" style="margin-top:8px;">
-               <button class="btn-primary" id="saveTargetBtn">Lưu mục tiêu</button>
-               <button class="btn-ghost" id="clearTargetBtn">Xóa mục tiêu</button>
-             </div>
-             <p class="hint">Hiển thị % hoàn thành mục tiêu thu nhập trên Dashboard.</p>
-           </div>
-          <hr />
-          <h3>Dữ liệu</h3>
-          <div class="flex-row" style="flex-wrap:wrap;">
-            <button class="btn-ghost" id="exportJsonBtn">Xuất JSON (Backup)</button>
-            <label class="btn btn-ghost" for="importJsonFile">Nhập JSON (Restore)</label>
-            <input id="importJsonFile" type="file" accept=".json,application/json" style="display:none;" />
-            <button class="btn-danger" id="clearAllBtn">Xóa Toàn Bộ Dữ Liệu</button>
-          </div>
-        </div>
+        <button class="btn btn-outline" id="logoutBtn">Đăng Xuất</button>
       </div>
     </div>
   </div>
 
-  <div id="backfillModal" class="modal-backdrop">
-    <div class="modal">
-      <h3>Bù chấm công</h3>
-      <p class="muted-sm">Nhập ngày và giờ bạn muốn bù (định dạng 24 giờ).</p>
-      <form id="backfillForm">
-        <div class="flex-row">
-          <div class="flex-col">
-            <label>Ngày</label>
-            <input id="backDate" type="date" required />
+  <div class="container">
+
+    <!-- LOGIN VIEW -->
+    <div id="loginView">
+      <div class="login-wrap card">
+        <div class="title center">Đăng Nhập hoặc Đăng Ký</div>
+        <div class="subtitle center">Chọn tên người dùng và mật khẩu đơn giản để bắt đầu</div>
+        <div class="grid">
+          <div class="field">
+            <label for="loginUsername">Tên người dùng</label>
+            <input id="loginUsername" class="input" placeholder="vd: gia" autocomplete="username"/>
           </div>
-          <div class="flex-col">
-            <label>Giờ bắt đầu</label>
-            <input id="backStart" type="time" required step="60" />
+          <div class="field">
+            <label for="loginPassword">Mật khẩu</label>
+            <input id="loginPassword" type="password" class="input" placeholder="mật khẩu đơn giản" autocomplete="current-password"/>
           </div>
-        </div>
-        <div class="flex-row" style="margin-top:8px;">
-          <div class="flex-col">
-            <label>Giờ kết thúc (bỏ trống nếu chỉ check-in)</label>
-            <input id="backEnd" type="time" step="60" />
+          <div class="field">
+            <button class="btn" id="loginBtn">Đăng Nhập / Đăng Ký</button>
           </div>
+          <div class="muted">Lưu ý: chỉ phân chia dữ liệu — không có bảo mật.</div>
         </div>
-        <div class="flex-row" style="margin-top:1rem;">
-          <button class="btn-primary" type="submit">Lưu</button>
-          <button class="btn-ghost" id="cancelBackfill" type="button">Hủy</button>
-        </div>
-      </form>
+      </div>
     </div>
+
+    <!-- APP VIEW -->
+    <div id="appView" style="display:none;">
+      <!-- Reminder -->
+      <div id="reminderBar" class="reminder card" style="display:none; margin-bottom:16px;"></div>
+
+      <!-- DASHBOARD TAB -->
+      <div id="dashboardTab">
+        <div class="grid grid-3">
+          <div class="card">
+            <div id="statusBox" class="status off">❌ Bạn chưa check-in</div>
+            <div class="spacer"></div>
+            <div class="row">
+              <button class="btn btn-green" id="checkInBtn">CHECK-IN</button>
+              <button class="btn btn-red" id="checkOutBtn" style="display:none;">CHECK-OUT</button>
+            </div>
+            <div id="checkoutNoteWrap" style="display:none; margin-top:12px;">
+              <div class="field">
+                <label for="checkoutNote">Ghi chú công việc hôm nay</label>
+                <textarea id="checkoutNote" class="input" placeholder="Ví dụ: Hoàn thành module báo cáo, fix 3 bug..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="grid">
+              <div class="stat">
+                <div class="label">Tổng thu nhập tháng này</div>
+                <div class="value" id="monthEarnings">0 VNĐ</div>
+              </div>
+              <div class="stat">
+                <div class="label">Giờ đã làm hôm nay</div>
+                <div class="value" id="todayHours">0 giờ</div>
+              </div>
+              <div class="stat">
+                <div class="label">Tổng giờ tuần này / tháng này</div>
+                <div class="value" id="weekMonthHours">0h / 0h</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="label" style="font-weight:700; margin-bottom:6px;">Mục tiêu thu nhập tháng</div>
+            <div class="row" style="align-items:flex-end;">
+              <div class="field">
+                <label>Mục tiêu (VNĐ)</label>
+                <input id="targetIncome" class="input" placeholder="vd: 1600000"/>
+              </div>
+              <button id="saveTargetBtn" class="btn btn-outline">Lưu mục tiêu</button>
+            </div>
+            <div class="spacer"></div>
+            <div class="progress"><span id="targetProgress"></span></div>
+            <div class="muted" id="targetLabel" style="margin-top:8px;">0% đạt được</div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="grid grid-2">
+          <div class="card">
+            <div style="font-weight:800; margin-bottom:8px;">Thêm ca làm thủ công</div>
+            <div class="row">
+              <div class="field">
+                <label>Ngày</label>
+                <input id="manualDate" class="input" type="date"/>
+              </div>
+              <div class="field">
+                <label>Giờ bắt đầu</label>
+                <input id="manualStart" class="input" type="time" step="60"/>
+              </div>
+              <div class="field">
+                <label>Giờ kết thúc</label>
+                <input id="manualEnd" class="input" type="time" step="60"/>
+              </div>
+            </div>
+            <div class="field" style="margin-top:8px;">
+              <label>Ghi chú</label>
+              <input id="manualNote" class="input" placeholder="Ghi chú cho ca làm"/>
+            </div>
+            <div class="spacer"></div>
+            <button class="btn" id="addManualBtn">Thêm</button>
+          </div>
+
+          <div class="card">
+            <div style="font-weight:800; margin-bottom:8px;">Ca gần đây</div>
+            <div id="recentLogs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORT TAB -->
+      <div id="reportTab" style="display:none;">
+        <div class="card">
+          <div class="row">
+            <div class="field">
+              <label>Tháng</label>
+              <select id="reportMonth" class="input"></select>
+            </div>
+            <div class="field">
+              <label>Năm</label>
+              <select id="reportYear" class="input"></select>
+            </div>
+            <div class="field" style="display:flex; gap:8px; align-items:flex-end;">
+              <button class="btn btn-outline" id="refreshReportBtn">Xem báo cáo</button>
+              <button class="btn btn-muted" id="exportCsvBtn">Xuất CSV</button>
+            </div>
+            <div class="field" style="display:flex; gap:8px; align-items:flex-end;">
+              <button class="btn btn-muted" id="backupBtn">Backup JSON</button>
+              <label class="btn btn-outline" style="cursor:pointer;">
+                Nhập JSON
+                <input type="file" id="restoreInput" accept="application/json" style="display:none;">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="grid">
+          <div class="card">
+            <div style="font-weight:800; margin-bottom:8px;">Báo cáo chi tiết</div>
+            <div class="canvas-wrap" style="margin-bottom:12px;">
+              <canvas id="reportChart" height="180"></canvas>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="icon-col">#</th>
+                    <th>Ngày</th>
+                    <th>⏰ Check-in</th>
+                    <th>⏰ Check-out</th>
+                    <th>⏱️ Số giờ</th>
+                    <th>💰 Lương</th>
+                    <th>Ghi chú</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="4">Tổng cộng</td>
+                    <td id="reportTotalHours">0 giờ</td>
+                    <td id="reportTotalPay">0 VNĐ</td>
+                    <td colspan="2"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="settingsTab" style="display:none;">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="label">Mức lương hiện tại</div>
+            <div class="value" id="currentWage" style="font-weight:800; font-size:22px; color: var(--primary); margin-top:6px;">0 VNĐ/giờ</div>
+            <div class="spacer"></div>
+            <div class="row">
+              <div class="field">
+                <label>Mức lương mới theo giờ (VNĐ)</label>
+                <input id="newWage" class="input" placeholder="Nhập mức lương mới theo giờ"/>
+              </div>
+              <button class="btn" id="saveWageBtn">Lưu thay đổi</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-weight:800; margin-bottom:8px;">Tùy chọn</div>
+            <div class="grid">
+              <div class="row" style="align-items:center; justify-content:space-between;">
+                <div>
+                  <div style="font-weight:600;">Nhắc nhở check-in/out</div>
+                  <div class="muted">Hiện cảnh báo khi quên thao tác</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="reminderToggle">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="row" style="align-items:center; justify-content:space-between;">
+                <div>
+                  <div style="font-weight:600;">Cho phép chỉnh sửa thời gian</div>
+                  <div class="muted">Bật/tắt khả năng sửa ca làm</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="editToggle" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
-  <div id="checkoutModal" class="modal-backdrop">
-    <div class="modal">
-      <h3>Ghi chú khi CHECK-OUT</h3>
-      <form id="checkoutForm">
-        <label for="checkoutNote">Ghi chú công việc hôm nay (tuỳ chọn)</label>
-        <textarea id="checkoutNote" rows="4" placeholder="Mô tả ngắn những việc đã làm..."></textarea>
-        <div class="flex-row" style="margin-top:12px;">
-          <button class="btn-primary" type="submit">Lưu & CHECK-OUT</button>
-          <button class="btn-ghost" id="cancelCheckout" type="button">Hủy</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="toast-wrap" id="toastWrap"></div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
   <script>
-    /*****************************************************************
-     * Ứng Dụng Chấm Công Offline - Phiên bản đã chỉnh:
-     * - Mục tiêu bằng tiền (VNĐ)
-     * - Navbar fix-top
-     * - Giờ chấm công dùng múi giờ VN (24h)
-     *****************************************************************/
+    // ====== Storage Key and Bootstrap ======
+    const STORAGE_KEY = 'chamCongApp';
 
-    const STORAGE_KEY = 'chamCongApp_v2';
-    const DEFAULT_HOURLY_WAGE = 25000;
-    const VN_TIMEZONE = 'Asia/Ho_Chi_Minh';
+    // ====== State ======
+    let appData = null; // loaded from localStorage
+    let activeTab = 'dashboardTab';
 
-    let appData = null;
-
-    // ---------- Utilities ----------
+    // ====== Utils ======
     function loadData() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         try {
           appData = JSON.parse(raw);
-          if (!appData.users) appData.users = {};
-          if (!('currentUser' in appData)) appData.currentUser = null;
-          if (!('settings' in appData)) appData.settings = { darkMode: false };
-        } catch (e) {
-          console.error('Lỗi khi đọc dữ liệu, tạo mới:', e);
-          appData = { currentUser: null, users: {}, settings: { darkMode: false } };
+        } catch {
+          appData = { currentUser: null, users: {} };
         }
       } else {
-        appData = { currentUser: null, users: {}, settings: { darkMode: false } };
-      }
-      // Ensure logs have unique IDs and migrate old targetHoursPerMonth -> targetEarningsPerMonth if present
-      if (appData.users) {
-          for (const user in appData.users) {
-              const u = appData.users[user];
-              if(!u.timeLogs) u.timeLogs = [];
-              u.timeLogs.forEach(log => {
-                  if (!log.id) {
-                      log.id = Date.parse(log.checkInTime) || Date.now();
-                  }
-              });
-              // Migration: if user used old targetHoursPerMonth, convert to monetary target using current hourlyWage
-              if (u.targetHoursPerMonth && !u.targetEarningsPerMonth) {
-                  const wage = (typeof u.hourlyWage === 'number' && u.hourlyWage > 0) ? u.hourlyWage : DEFAULT_HOURLY_WAGE;
-                  u.targetEarningsPerMonth = Math.round(u.targetHoursPerMonth * wage);
-                  delete u.targetHoursPerMonth;
-              }
-              if (!('targetEarningsPerMonth' in u)) u.targetEarningsPerMonth = null;
-              if (!('hourlyWage' in u)) u.hourlyWage = DEFAULT_HOURLY_WAGE;
-          }
+        appData = { currentUser: null, users: {} };
       }
     }
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
-    function formatCurrency(v) {
-      if (!isFinite(v)) return '0 VNĐ';
-      return Math.round(v).toLocaleString('vi-VN') + ' VNĐ';
+    function nowISO() { return new Date().toISOString(); }
+    function uniqueId() { return String(Date.now()) + '_' + Math.random().toString(36).slice(2,8); }
+    function fmtMoney(n) {
+      if (!isFinite(n)) return '0 VNĐ';
+      return n.toLocaleString('vi-VN') + ' VNĐ';
     }
-    function formatDateTimeLocal(iso) {
-      if (!iso) return '-';
-      const d = new Date(iso);
-      return isNaN(d) ? '-' : d.toLocaleString('vi-VN', { hour12: false, timeZone: VN_TIMEZONE });
+    function fmtHour(n) {
+      // n in hours (float)
+      const h = Math.floor(n);
+      const m = Math.round((n - h) * 60);
+      if (m === 60) { return (h+1) + 'h 0m'; }
+      return (h > 0 ? h + 'h ' : '') + m + 'm';
     }
-    function formatDateLocal(iso) {
-      const d = new Date(iso);
-      return isNaN(d) ? '-' : d.toLocaleDateString('vi-VN', { timeZone: VN_TIMEZONE });
+    function parseVNInt(val) {
+      if (typeof val === 'number') return val;
+      if (!val) return 0;
+      const cleaned = String(val).replace(/[^\d\-]/g, '');
+      return parseInt(cleaned || '0', 10);
     }
-    function hoursBetween(startIso, endIso) {
-      const s = new Date(startIso);
-      const e = new Date(endIso);
-      if (isNaN(s) || isNaN(e)) return 0;
-      const hours = (e - s) / (1000 * 60 * 60);
-      return Math.max(0, Math.round(hours * 100) / 100);
+    function pad2(n){ return n.toString().padStart(2,'0'); }
+    function toDateObj(iso) { return new Date(iso); }
+    function ymd(d) { return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); }
+    function hm(d) { return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+    function displayDate(iso) {
+      const d = toDateObj(iso);
+      return pad2(d.getDate()) + '/' + pad2(d.getMonth()+1) + '/' + d.getFullYear();
     }
-    // Convert a local VN date + time (YYYY-MM-DD, HH:MM) to ISO string in UTC (Z)
-    function makeIsoFromVnLocal(dateStr, timeStr) {
-      const [y, m, d] = dateStr.split('-').map(Number);
-      const [hh, mm] = (timeStr || '00:00').split(':').map(Number);
-      // VN = UTC+7 -> to get UTC timestamp subtract 7 hours
-      const utcMs = Date.UTC(y, m - 1, d, hh, mm, 0) - (7 * 60 * 60 * 1000);
-      return new Date(utcMs).toISOString();
+    function displayDT(iso) {
+      const d = toDateObj(iso);
+      return displayDate(iso) + ' ' + hm(d);
     }
-    // Current time in VN as ISO (Z)
-    function nowInVNIso() {
-      // Create date string in VN timezone, then convert to ISO Z
-      const parts = new Date().toLocaleString('en-CA', { timeZone: VN_TIMEZONE, hour12: false }).replace(', ', 'T');
-      return parts + 'Z';
+    function hoursBetween(isoStart, isoEnd) {
+      const s = toDateObj(isoStart).getTime();
+      const e = toDateObj(isoEnd).getTime();
+      if (!isFinite(s) || !isFinite(e) || e <= s) return 0;
+      return (e - s) / 3600000; // hours
     }
-    function getVNYearMonthFromIso(iso) {
-      const d = new Date(new Date(iso).toLocaleString('en-US', { timeZone: VN_TIMEZONE }));
-      return { year: d.getFullYear(), month: d.getMonth() };
+    function startOfWeek(d) {
+      const x = new Date(d);
+      const day = (x.getDay() + 6) % 7; // Mon=0
+      x.setHours(0,0,0,0);
+      x.setDate(x.getDate() - day);
+      return x;
     }
-    function getVNDateParts(iso) {
-      const d = new Date(new Date(iso).toLocaleString('en-US', { timeZone: VN_TIMEZONE }));
-      return { year: d.getFullYear(), month: d.getMonth(), date: d.getDate(), dow: d.getDay() };
+    function endOfWeek(d) {
+      const s = startOfWeek(d);
+      const e = new Date(s);
+      e.setDate(e.getDate() + 7);
+      return e;
     }
-    function getCurrentUserName() { return appData?.currentUser; }
-    function getUserData(username) { return username && appData.users[username] ? appData.users[username] : null; }
-
-    // ---------- Toast ----------
-    function showToast(text, timeout = 3000) {
-      const wrap = document.getElementById('toastWrap');
-      const t = document.createElement('div');
-      t.className = 'toast';
-      t.textContent = text;
-      wrap.appendChild(t);
-      requestAnimationFrame(() => t.classList.add('show'));
+    function startOfMonth(d) {
+      return new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    function endOfMonth(d) {
+      return new Date(d.getFullYear(), d.getMonth()+1, 1);
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.textContent = msg;
+      t.appendChild(item);
       setTimeout(() => {
-        t.classList.remove('show');
-        setTimeout(() => wrap.removeChild(t), 300);
-      }, timeout);
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(6px)';
+      }, 2400);
+      setTimeout(() => t.removeChild(item), 2800);
     }
 
-    // ---------- UI management ----------
+    function getUser() {
+      const u = appData.currentUser;
+      if (!u) return null;
+      if (!appData.users[u]) appData.users[u] = { password:'', hourlyWage: 0, timeLogs: [] };
+      return appData.users[u];
+    }
+
+    // ====== View Controls ======
     function showView(viewId) {
-      ['loginView', 'appView'].forEach(id => {
-        document.getElementById(id).style.display = (id === viewId) ? '' : 'none';
-      });
+      document.getElementById('loginView').style.display = (viewId === 'loginView') ? 'block' : 'none';
+      document.getElementById('appView').style.display = (viewId === 'appView') ? 'block' : 'none';
+      document.getElementById('navbar').style.display = (viewId === 'appView') ? 'block' : 'none';
     }
     function showTab(tabId) {
+      activeTab = tabId;
       ['dashboardTab', 'reportTab', 'settingsTab'].forEach(id => {
-        document.getElementById(id).style.display = (id === tabId) ? '' : 'none';
+        document.getElementById(id).style.display = (id === tabId) ? 'block' : 'none';
       });
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      if (tabId === 'dashboardTab') document.getElementById('tabDashboardBtn').classList.add('active');
-      if (tabId === 'reportTab') document.getElementById('tabReportBtn').classList.add('active');
-      if (tabId === 'settingsTab') document.getElementById('tabSettingsBtn').classList.add('active');
+      // Tab button active
+      document.getElementById('tabDashboardBtn').classList.toggle('active', tabId === 'dashboardTab');
+      document.getElementById('tabReportBtn').classList.toggle('active', tabId === 'reportTab');
+      document.getElementById('tabSettingsBtn').classList.toggle('active', tabId === 'settingsTab');
+
+      if (tabId === 'reportTab') generateReport();
+      if (tabId === 'dashboardTab') renderRecent();
     }
 
+    // ====== Auth ======
+    function handleLoginRegister() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!username) { showToast('Vui lòng nhập tên người dùng'); return; }
+      if (!password) { showToast('Vui lòng nhập mật khẩu'); return; }
+
+      const exists = !!appData.users[username];
+      if (exists) {
+        if (appData.users[username].password === password) {
+          appData.currentUser = username;
+          saveData();
+          showToast('Đăng nhập thành công');
+          updateUI();
+        } else {
+          showToast('Sai mật khẩu');
+        }
+      } else {
+        appData.users[username] = {
+          password,
+          hourlyWage: 25000,
+          timeLogs: [],
+          settings: { reminders: true, allowEdit: true, dark: false, targetIncome: 0 }
+        };
+        appData.currentUser = username;
+        saveData();
+        showToast('Tạo tài khoản mới thành công');
+        updateUI();
+      }
+    }
+    function logout() {
+      appData.currentUser = null;
+      saveData();
+      updateUI();
+    }
+
+    // ====== Core features ======
+    function getActiveLog(user) {
+      // active if log has checkInTime but no checkOutTime
+      return (user.timeLogs || []).find(x => x.checkInTime && !x.checkOutTime);
+    }
+
+    function checkIn() {
+      const user = getUser();
+      if (!user) return;
+      if (getActiveLog(user)) { showToast('Bạn đang trong ca làm'); return; }
+      const rec = {
+        id: uniqueId(),
+        checkInTime: nowISO(),
+        checkOutTime: null,
+        earnings: 0,
+        note: ''
+      };
+      user.timeLogs.unshift(rec);
+      saveData();
+      showToast('Đã CHECK-IN');
+      updateUI();
+    }
+
+    function checkOut() {
+      const user = getUser();
+      if (!user) return;
+      const rec = getActiveLog(user);
+      if (!rec) { showToast('Bạn chưa CHECK-IN'); return; }
+      rec.checkOutTime = nowISO();
+      const hours = hoursBetween(rec.checkInTime, rec.checkOutTime);
+      const wage = user.hourlyWage || 0;
+      rec.earnings = Math.round(hours * wage);
+      const note = document.getElementById('checkoutNote').value.trim();
+      if (note) rec.note = note;
+      saveData();
+      showToast('Đã CHECK-OUT');
+      document.getElementById('checkoutNote').value = '';
+      updateUI();
+    }
+
+    function addManualLog() {
+      const user = getUser();
+      if (!user) return;
+      const date = document.getElementById('manualDate').value;
+      const start = document.getElementById('manualStart').value;
+      const end = document.getElementById('manualEnd').value;
+      const note = document.getElementById('manualNote').value.trim();
+
+      if (!date || !start || !end) { showToast('Vui lòng nhập đủ ngày, giờ bắt đầu và kết thúc'); return; }
+      const sISO = new Date(date + 'T' + start + ':00').toISOString();
+      const eISO = new Date(date + 'T' + end + ':00').toISOString();
+      const hrs = hoursBetween(sISO, eISO);
+      if (hrs <= 0) { showToast('Giờ kết thúc phải sau giờ bắt đầu'); return; }
+
+      const rec = {
+        id: uniqueId(),
+        checkInTime: sISO,
+        checkOutTime: eISO,
+        earnings: Math.round(hrs * (user.hourlyWage || 0)),
+        note: note || ''
+      };
+      user.timeLogs.unshift(rec);
+      saveData();
+      showToast('Đã thêm ca thủ công');
+      document.getElementById('manualNote').value = '';
+      updateUI();
+    }
+
+    function updateWage() {
+      const user = getUser();
+      if (!user) return;
+      const nw = parseVNInt(document.getElementById('newWage').value);
+      if (nw <= 0) { showToast('Mức lương phải lớn hơn 0'); return; }
+      user.hourlyWage = nw;
+      saveData();
+      showToast('Đã cập nhật mức lương');
+      updateUI();
+    }
+
+    // Edit & Delete logs
+    function deleteLog(logId) {
+      const user = getUser();
+      if (!user) return;
+      user.timeLogs = (user.timeLogs || []).filter(x => x.id !== logId);
+      saveData();
+      showToast('Đã xóa ca làm');
+      updateUI();
+    }
+
+    function updateLog(logId, newStartISO, newEndISO, newNote) {
+      const user = getUser();
+      if (!user) return;
+      const rec = user.timeLogs.find(x => x.id === logId);
+      if (!rec) return;
+      if (newStartISO) rec.checkInTime = newStartISO;
+      rec.checkOutTime = newEndISO || null;
+      const hrs = (rec.checkOutTime) ? hoursBetween(rec.checkInTime, rec.checkOutTime) : 0;
+      rec.earnings = Math.round(hrs * (user.hourlyWage || 0));
+      rec.note = newNote || '';
+      saveData();
+      showToast('Đã cập nhật ca làm');
+      updateUI();
+    }
+
+    // ====== Reporting ======
+    function generateReport() {
+      const user = getUser();
+      if (!user) return;
+
+      const monthSel = document.getElementById('reportMonth').value;
+      const yearSel = parseInt(document.getElementById('reportYear').value, 10);
+
+      const m = parseInt(monthSel, 10); // 1..12
+      const start = new Date(yearSel, m - 1, 1);
+      const end = new Date(yearSel, m, 1);
+
+      const logs = (user.timeLogs || []).filter(x => {
+        const ci = toDateObj(x.checkInTime);
+        return ci >= start && ci < end && x.checkOutTime;
+      }).sort((a,b) => toDateObj(a.checkInTime) - toDateObj(b.checkInTime));
+
+      // Render table
+      const tbody = document.getElementById('reportTableBody');
+      tbody.innerHTML = '';
+      let totalHours = 0, totalPay = 0;
+
+      logs.forEach((x, idx) => {
+        const h = hoursBetween(x.checkInTime, x.checkOutTime);
+        totalHours += h;
+        totalPay += (x.earnings || 0);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="icon-col">${idx + 1}</td>
+          <td>${displayDate(x.checkInTime)}</td>
+          <td>${hm(toDateObj(x.checkInTime))}</td>
+          <td>${hm(toDateObj(x.checkOutTime))}</td>
+          <td>${h.toFixed(2)}</td>
+          <td>${fmtMoney(x.earnings || 0)}</td>
+          <td>${(x.note || '').replace(/</g,'&lt;')}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn btn-outline" data-edit="${x.id}">Sửa</button>
+              <button class="btn btn-red" data-del="${x.id}">Xóa</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('reportTotalHours').textContent = totalHours.toFixed(2) + ' giờ';
+      document.getElementById('reportTotalPay').textContent = fmtMoney(totalPay);
+
+      // Bind actions for edit/delete in table
+      tbody.querySelectorAll('button[data-del]').forEach(btn => {
+        btn.addEventListener('click', () => deleteLog(btn.getAttribute('data-del')));
+      });
+      tbody.querySelectorAll('button[data-edit]').forEach(btn => {
+        btn.addEventListener('click', () => openEditPrompt(btn.getAttribute('data-edit')));
+      });
+
+      // Chart: hours per day of month
+      renderMonthChart(start, logs);
+    }
+
+    function renderMonthChart(monthStart, logs) {
+      const canvas = document.getElementById('reportChart');
+      const ctx = canvas.getContext('2d');
+
+      const year = monthStart.getFullYear();
+      const month = monthStart.getMonth(); // 0..11
+      const lastDay = new Date(year, month + 1, 0).getDate();
+
+      const perDay = Array(lastDay).fill(0);
+      logs.forEach(x => {
+        const d = toDateObj(x.checkInTime);
+        const dayIdx = d.getDate() - 1;
+        const h = hoursBetween(x.checkInTime, x.checkOutTime);
+        perDay[dayIdx] += h;
+      });
+
+      // Clear
+      ctx.clearRect(0,0,canvas.width, canvas.height);
+      const W = canvas.width = canvas.clientWidth || 800;
+      const H = canvas.height;
+
+      const padding = 32;
+      const chartW = W - padding*2;
+      const chartH = H - padding*2;
+      const maxVal = Math.max(1, Math.ceil(Math.max(...perDay) || 0));
+      const barW = Math.max(3, chartW / lastDay - 4);
+
+      // Axes
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, H - padding);
+      ctx.lineTo(W - padding, H - padding);
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, H - padding);
+      ctx.stroke();
+
+      // Y labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px system-ui';
+      for (let t = 0; t <= maxVal; t += Math.max(1, Math.round(maxVal/4))) {
+        const y = H - padding - (t / maxVal) * chartH;
+        ctx.fillText(String(t) + 'h', 4, y + 4);
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(148,163,184,0.3)';
+        ctx.moveTo(padding, y);
+        ctx.lineTo(W - padding, y);
+        ctx.stroke();
+      }
+
+      // Bars
+      const baseX = padding;
+      const step = chartW / lastDay;
+      for (let i=0;i<lastDay;i++) {
+        const v = perDay[i];
+        const h = (v / maxVal) * chartH;
+        const x = baseX + i * step + 2;
+        const y = H - padding - h;
+
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#2a7ade';
+        ctx.fillRect(x, y, barW, h);
+
+        // day label every 2 days
+        if (i % 2 === 0) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillText(String(i+1), x, H - padding + 12);
+        }
+      }
+    }
+
+    // ====== Dashboard rendering ======
+    function computeStats() {
+      const user = getUser();
+      const logs = (user?.timeLogs || []);
+
+      const today = new Date();
+      const todayYMD = ymd(today);
+
+      let todayHours = 0;
+      let weekHours = 0;
+      let monthHours = 0;
+      let monthEarnings = 0;
+
+      const sw = startOfWeek(today);
+      const ew = endOfWeek(today);
+      const sm = startOfMonth(today);
+      const em = endOfMonth(today);
+
+      logs.forEach(x => {
+        const ci = toDateObj(x.checkInTime);
+        const co = x.checkOutTime ? toDateObj(x.checkOutTime) : null;
+        const h = co ? hoursBetween(x.checkInTime, x.checkOutTime) : 0;
+
+        if (ymd(ci) === todayYMD && h > 0) todayHours += h;
+        if (ci >= sw && ci < ew && h > 0) weekHours += h;
+        if (ci >= sm && ci < em && h > 0) {
+          monthHours += h;
+          monthEarnings += (x.earnings || 0);
+        }
+      });
+
+      // If currently checked-in, add live hours to today/week/month
+      const active = getActiveLog(user);
+      if (active) {
+        const liveH = hoursBetween(active.checkInTime, nowISO());
+        const aci = toDateObj(active.checkInTime);
+        if (ymd(aci) === todayYMD) todayHours += liveH;
+        if (aci >= sw && aci < ew) weekHours += liveH;
+        if (aci >= sm && aci < em) monthHours += liveH;
+      }
+
+      return { todayHours, weekHours, monthHours, monthEarnings };
+    }
+
+    function renderStatus() {
+      const user = getUser();
+      const statusBox = document.getElementById('statusBox');
+      const checkInBtn = document.getElementById('checkInBtn');
+      const checkOutBtn = document.getElementById('checkOutBtn');
+      const noteWrap = document.getElementById('checkoutNoteWrap');
+
+      const active = getActiveLog(user);
+      if (active) {
+        statusBox.classList.remove('off');
+        statusBox.innerHTML = '✅ Bạn đang trong ca làm (bắt đầu lúc ' + hm(toDateObj(active.checkInTime)) + ')';
+        checkInBtn.style.display = 'none';
+        checkOutBtn.style.display = 'inline-flex';
+        noteWrap.style.display = 'block';
+      } else {
+        statusBox.classList.add('off');
+        statusBox.innerHTML = '❌ Bạn chưa check-in';
+        checkInBtn.style.display = 'inline-flex';
+        checkOutBtn.style.display = 'none';
+        noteWrap.style.display = 'none';
+      }
+    }
+
+    function renderStats() {
+      const { todayHours, weekHours, monthHours, monthEarnings } = computeStats();
+      document.getElementById('todayHours').textContent = todayHours ? todayHours.toFixed(2) + ' giờ' : '0 giờ';
+      document.getElementById('weekMonthHours').textContent = (weekHours.toFixed(2) + 'h / ' + monthHours.toFixed(2) + 'h');
+      document.getElementById('monthEarnings').textContent = fmtMoney(monthEarnings);
+
+      // Target
+      const user = getUser();
+      const target = parseVNInt(user?.settings?.targetIncome || 0);
+      const pct = target > 0 ? Math.min(100, Math.round((monthEarnings / target) * 100)) : 0;
+      document.getElementById('targetProgress').style.width = pct + '%';
+      document.getElementById('targetLabel').textContent = (target > 0)
+        ? (pct + '% đã đạt được — ' + fmtMoney(monthEarnings) + ' / ' + fmtMoney(target))
+        : 'Chưa đặt mục tiêu';
+      document.getElementById('targetIncome').value = target ? target : '';
+    }
+
+    function renderRecent() {
+      const user = getUser();
+      const wrap = document.getElementById('recentLogs');
+      wrap.innerHTML = '';
+
+      const logs = (user?.timeLogs || []).slice(0, 8);
+      if (logs.length === 0) {
+        wrap.innerHTML = '<div class="muted">Chưa có ca nào</div>';
+        return;
+      }
+
+      const allowEdit = !!(user?.settings?.allowEdit);
+      logs.forEach(x => {
+        const div = document.createElement('div');
+        div.className = 'stat';
+        const active = x.checkInTime && !x.checkOutTime;
+
+        const title = active
+          ? 'Đang làm — bắt đầu ' + displayDT(x.checkInTime)
+          : displayDT(x.checkInTime) + ' → ' + (x.checkOutTime ? displayDT(x.checkOutTime) : '—');
+
+        const hours = x.checkOutTime ? hoursBetween(x.checkInTime, x.checkOutTime) : hoursBetween(x.checkInTime, nowISO());
+        const pay = x.checkOutTime ? (x.earnings || 0) : Math.round(hours * (user.hourlyWage || 0));
+
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items: center;">
+            <div>
+              <div style="font-weight:700;">${title}</div>
+              <div class="muted">${x.note ? ('Ghi chú: ' + x.note.replace(/</g,'&lt;')) : ''}</div>
+              <div class="muted">⏱ ${hours.toFixed(2)} giờ — 💰 ${fmtMoney(pay)}</div>
+            </div>
+            <div class="table-actions">
+              ${allowEdit ? `<button class="btn btn-outline" data-edit="${x.id}">Sửa</button>` : ''}
+              <button class="btn btn-red" data-del="${x.id}">Xóa</button>
+            </div>
+          </div>
+          ${allowEdit ? `
+          <div class="row" data-edit-form="${x.id}" style="margin-top:10px; display:none;">
+            <div class="field">
+              <label>Ngày</label>
+              <input type="date" class="input" data-edit-date="${x.id}"/>
+            </div>
+            <div class="field">
+              <label>Bắt đầu</label>
+              <input type="time" class="input" step="60" data-edit-start="${x.id}"/>
+            </div>
+            <div class="field">
+              <label>Kết thúc</label>
+              <input type="time" class="input" step="60" data-edit-end="${x.id}"/>
+            </div>
+            <div class="field" style="flex-basis:100%;">
+              <label>Ghi chú</label>
+              <input class="input" placeholder="Ghi chú" data-edit-note="${x.id}"/>
+            </div>
+            <button class="btn" data-edit-save="${x.id}">Lưu</button>
+            <button class="btn btn-muted" data-edit-cancel="${x.id}">Hủy</button>
+          </div>` : ''}
+        `;
+        wrap.appendChild(div);
+
+        // Bind buttons
+        div.querySelectorAll('button[data-del]').forEach(btn => {
+          btn.addEventListener('click', () => deleteLog(btn.getAttribute('data-del')));
+        });
+        if (allowEdit) {
+          const editBtn = div.querySelector(`button[data-edit="${x.id}"]`);
+          const form = div.querySelector(`[data-edit-form="${x.id}"]`);
+          const dateI = div.querySelector(`[data-edit-date="${x.id}"]`);
+          const startI = div.querySelector(`[data-edit-start="${x.id}"]`);
+          const endI = div.querySelector(`[data-edit-end="${x.id}"]`);
+          const noteI = div.querySelector(`[data-edit-note="${x.id}"]`);
+          const saveBtn = div.querySelector(`[data-edit-save="${x.id}"]`);
+          const cancelBtn = div.querySelector(`[data-edit-cancel="${x.id}"]`);
+
+          if (editBtn) {
+            editBtn.addEventListener('click', () => {
+              // Prefill
+              const s = toDateObj(x.checkInTime);
+              dateI.value = ymd(s);
+              startI.value = hm(s);
+              endI.value = x.checkOutTime ? hm(toDateObj(x.checkOutTime)) : '';
+              noteI.value = x.note || '';
+              form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+            });
+          }
+          if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+              const d = dateI.value;
+              const st = startI.value;
+              const en = endI.value;
+              const note = noteI.value.trim();
+              if (!d || !st) { showToast('Ngày và giờ bắt đầu là bắt buộc'); return; }
+              const sISO = new Date(d + 'T' + st + ':00').toISOString();
+              const eISO = en ? new Date(d + 'T' + en + ':00').toISOString() : null;
+              if (eISO && hoursBetween(sISO, eISO) <= 0) { showToast('Giờ kết thúc phải sau giờ bắt đầu'); return; }
+              updateLog(x.id, sISO, eISO, note);
+            });
+          }
+          if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => { form.style.display = 'none'; });
+          }
+        }
+      });
+    }
+
+    // ====== Reminder ======
+    let reminderTimer = null;
+    function updateReminder() {
+      const bar = document.getElementById('reminderBar');
+      const user = getUser();
+      if (!user) { bar.style.display = 'none'; return; }
+
+      const enabled = !!(user.settings?.reminders);
+      if (!enabled) { bar.style.display = 'none'; return; }
+
+      const active = getActiveLog(user);
+      if (active) {
+        const h = hoursBetween(active.checkInTime, nowISO());
+        if (h >= 8) {
+          bar.textContent = 'Bạn đã làm ' + h.toFixed(2) + ' giờ — nhớ CHECK-OUT nếu đã xong nhé!';
+          bar.style.display = 'block';
+        } else {
+          bar.style.display = 'none';
+        }
+      } else {
+        // not active: gentle nudge late afternoon
+        const now = new Date();
+        const hour = now.getHours();
+        if (hour >= 17 && hour <= 20) {
+          bar.textContent = 'Bạn chưa check-in hôm nay? Hãy kiểm tra lại nhé.';
+          bar.style.display = 'block';
+        } else {
+          bar.style.display = 'none';
+        }
+      }
+    }
+
+    // ====== Export / Backup ======
+    function exportCSV() {
+      const user = getUser();
+      if (!user) return;
+      const m = parseInt(document.getElementById('reportMonth').value, 10);
+      const year = parseInt(document.getElementById('reportYear').value, 10);
+      const start = new Date(year, m-1, 1);
+      const end = new Date(year, m, 1);
+      const logs = (user.timeLogs || []).filter(x => {
+        const ci = toDateObj(x.checkInTime);
+        return ci >= start && ci < end && x.checkOutTime;
+      }).sort((a,b) => toDateObj(a.checkInTime) - toDateObj(b.checkInTime));
+
+      const rows = [['Ngày','Check-in','Check-out','Số giờ','Lương','Ghi chú']];
+      logs.forEach(x => {
+        const h = hoursBetween(x.checkInTime, x.checkOutTime);
+        rows.push([
+          displayDate(x.checkInTime),
+          displayDT(x.checkInTime),
+          displayDT(x.checkOutTime),
+          h.toFixed(2),
+          (x.earnings || 0),
+          (x.note || '').replace(/"/g,'""')
+        ]);
+      });
+
+      const csv = rows.map(r => r.map(v => `"${String(v)}"`).join(',')).join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bao_cao_${user ? Object.keys(appData.users).indexOf(appData.currentUser) : 'user'}_${year}_${m}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function backupJSON() {
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `chamcong_backup.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất backup JSON');
+    }
+
+    function restoreJSON(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const obj = JSON.parse(reader.result);
+          // Basic sanity
+          if (!obj || typeof obj !== 'object' || !('users' in obj)) throw new Error('invalid');
+          appData = obj;
+          saveData();
+          showToast('Đã khôi phục dữ liệu');
+          updateUI();
+        } catch {
+          showToast('File JSON không hợp lệ');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ====== Edit dialog via prompt (simple) ======
+    function openEditPrompt(logId) {
+      const user = getUser();
+      if (!user?.settings?.allowEdit) { showToast('Chỉnh sửa đang tắt'); return; }
+      const rec = user.timeLogs.find(x => x.id === logId);
+      if (!rec) return;
+
+      const s = toDateObj(rec.checkInTime);
+      const e = rec.checkOutTime ? toDateObj(rec.checkOutTime) : null;
+      const dStr = prompt('Ngày (YYYY-MM-DD)', ymd(s));
+      if (!dStr) return;
+      const sStr = prompt('Bắt đầu (HH:MM)', hm(s));
+      if (!sStr) return;
+      const eStr = prompt('Kết thúc (HH:MM) — bỏ trống nếu chưa', e ? hm(e) : '');
+      const note = prompt('Ghi chú', rec.note || '') || '';
+
+      const sISO = new Date(dStr + 'T' + sStr + ':00').toISOString();
+      const eISO = eStr ? new Date(dStr + 'T' + eStr + ':00').toISOString() : null;
+      if (eISO && hoursBetween(sISO, eISO) <= 0) { showToast('Giờ kết thúc phải sau giờ bắt đầu'); return; }
+      updateLog(rec.id, sISO, eISO, note);
+    }
+
+    // ====== UI Update ======
     function updateUI() {
-      const current = getCurrentUserName();
-      if (!current) {
+      const user = getUser();
+      if (!appData.currentUser || !user) {
         showView('loginView');
         return;
       }
       showView('appView');
-      document.getElementById('greeting').textContent = `Xin chào, ${current}!`;
-      const ud = getUserData(current);
-      document.getElementById('currentWageText').textContent = `Lương: ${formatCurrency(ud.hourlyWage).replace(' VNĐ', '')}/giờ`;
-      document.getElementById('currentWageDisplay').textContent = `${formatCurrency(ud.hourlyWage)}`;
 
-      const lastLog = ud.timeLogs.length ? ud.timeLogs[ud.timeLogs.length - 1] : null;
-      const isCheckedIn = lastLog && !lastLog.checkOutTime;
-      const checkBtn = document.getElementById('checkBtn');
-      const statusText = document.getElementById('statusText');
-      if (isCheckedIn) {
-        checkBtn.textContent = 'CHECK-OUT';
-        checkBtn.className = 'big-btn btn-danger';
-        statusText.innerHTML = `✅ Đang trong ca làm việc (từ ${formatDateTimeLocal(lastLog.checkInTime)})`;
-      } else {
-        checkBtn.textContent = 'CHECK-IN';
-        checkBtn.className = 'big-btn btn-primary';
-        statusText.textContent = `❌ Bạn chưa check-in.`;
-      }
+      // Greeting
+      document.getElementById('greeting').textContent = 'Xin chào, ' + appData.currentUser + '!';
 
-      const nowISO = nowInVNIso();
-      const nowVN = getVNDateParts(nowISO);
-      const todayHours = calcHoursForDay(ud.timeLogs, nowVN.year, nowVN.month, nowVN.date);
-      document.getElementById('todayHours').textContent = `${todayHours} giờ`;
-      const weekHours = calcHoursForWeek(ud.timeLogs, nowISO);
-      document.getElementById('weekHours').textContent = `${weekHours} giờ`;
-      const { totalHours, totalEarnings } = calcMonthStats(ud.timeLogs, nowVN.month, nowVN.year);
-      document.getElementById('monthHours').textContent = `${totalHours} giờ`;
-      document.getElementById('monthEarnings').textContent = formatCurrency(totalEarnings);
+      // Settings
+      const wage = user.hourlyWage || 0;
+      document.getElementById('currentWage').textContent = fmtMoney(wage) + '/giờ';
+      document.getElementById('newWage').value = '';
 
-      const target = ud.targetEarningsPerMonth;
-      document.getElementById('targetAmountDisplay').textContent = target ? `${formatCurrency(target)}` : '— VNĐ';
-      document.getElementById('targetPercent').textContent = (target && totalEarnings > 0) ? `${Math.round((totalEarnings / target) * 100)}%` : '—%';
+      // Settings toggles
+      if (!user.settings) user.settings = { reminders: true, allowEdit: true, dark: false, targetIncome: 0 };
+      document.getElementById('reminderToggle').checked = !!user.settings.reminders;
+      document.getElementById('editToggle').checked = !!user.settings.allowEdit;
+      document.getElementById('darkToggle').checked = !!user.settings.dark;
+      applyTheme(!!user.settings.dark);
 
-      renderRecentLogs(ud.timeLogs);
-      populateReportPeriodSelector();
-      applyDarkMode(appData.settings.darkMode);
-      saveData();
+      // Dashboard
+      renderStatus();
+      renderStats();
+      renderRecent();
+
+      // Report selectors
+      populateMonthYearSelectors();
+      if (activeTab === 'reportTab') generateReport();
+
+      // Reminder
+      updateReminder();
     }
-    
-    // ---------- Delete Log ----------
-    function handleDeleteLog(logId) {
-        if (!logId) return;
-        if (!confirm('Bạn có chắc chắn muốn xóa chấm công này không? Dữ liệu không thể phục hồi.')) return;
 
-        const username = getCurrentUserName();
-        const ud = getUserData(username);
-        if (!ud || !ud.timeLogs) return;
+    function populateMonthYearSelectors() {
+      const monthSel = document.getElementById('reportMonth');
+      const yearSel = document.getElementById('reportYear');
 
-        const logIndex = ud.timeLogs.findIndex(log => log.id == logId);
-
-        if (logIndex > -1) {
-            ud.timeLogs.splice(logIndex, 1);
-            saveData();
-            showToast('Đã xóa chấm công.');
-            updateUI();
-            if (document.getElementById('reportTab').style.display !== 'none') {
-                document.getElementById('refreshReportBtn').click();
-            }
-        } else {
-            showToast('Lỗi: Không tìm thấy chấm công để xóa.', 4000);
+      if (!monthSel.dataset.filled) {
+        monthSel.innerHTML = '';
+        for (let m = 1; m <= 12; m++) {
+          const opt = document.createElement('option');
+          opt.value = m; opt.textContent = m;
+          monthSel.appendChild(opt);
         }
-    }
-
-    // ---------- Rendering ----------
-    function renderRecentLogs(timeLogs) {
-      const container = document.getElementById('recentLogsContainer');
-      container.innerHTML = '';
-      if (!timeLogs || !timeLogs.length) {
-        container.innerHTML = '<p class="muted-sm">Chưa có ca làm nào.</p>';
-        return;
+        monthSel.dataset.filled = '1';
       }
-      const ul = document.createElement('div');
-      ul.style.display = 'flex';
-      ul.style.flexDirection = 'column';
-      ul.style.gap = '0.5rem';
-      
-      const trashSVG = `<svg class="delete-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3V2h11v1h-11z"/></svg>`;
 
-      timeLogs.slice().reverse().slice(0, 15).forEach(log => {
-        const item = document.createElement('div');
-        item.className = 'log-item';
-        const date = formatDateLocal(log.checkInTime);
-        const inT = formatDateTimeLocal(log.checkInTime).split(' ')[1];
-        const outT = log.checkOutTime ? formatDateTimeLocal(log.checkOutTime).split(' ')[1] : '<span class="muted-sm">Đang làm</span>';
-        const hours = log.checkOutTime ? `${hoursBetween(log.checkInTime, log.checkOutTime)} giờ` : '-';
-        const earn = log.earnings ? formatCurrency(log.earnings) : '-';
-        const note = log.note ? `<div class="note-small">📝 ${escapeHtml(log.note)}</div>` : '';
-        
-        item.innerHTML = `
-          <div style="flex-grow:1;">
-            <div style="font-weight:600;">${date} <span class="muted-sm">(${inT} → ${outT})</span></div>
-            ${note}
-          </div>
-          <div style="text-align:right; min-width:100px; margin-right: 0.5rem;">
-            <div>${hours}</div>
-            <div class="muted-sm">${earn}</div>
-          </div>
-          <button class="btn-danger btn-icon btn-delete-log" data-log-id="${log.id}" title="Xóa chấm công">${trashSVG}</button>
-        `;
-        ul.appendChild(item);
+      const user = getUser();
+      const years = new Set();
+      const now = new Date();
+      years.add(now.getFullYear());
+      (user?.timeLogs || []).forEach(x => {
+        years.add(toDateObj(x.checkInTime).getFullYear());
       });
-      container.appendChild(ul);
+      
+      yearSel.innerHTML = '';
+      Array.from(years).sort((a,b)=>a-b).forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        yearSel.appendChild(opt);
+      });
+        yearSel.dataset.filled = '1';   
+      // Default to current month/year
+      const cur = new Date();
+      monthSel.value = cur.getMonth() + 1;
+      yearSel.value = cur.getFullYear();
     }
-    
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-    }
-    
-    // --- Calculations ---
-    function calcMonthStats(timeLogs, monthZeroBased, year) {
-        let totalHours = 0, totalEarnings = 0;
-        (timeLogs || []).forEach(log => {
-            if (!log.checkOutTime) return;
-            const parts = getVNYearMonthFromIso(log.checkInTime);
-            if (parts.month === monthZeroBased && parts.year === year) {
-                const h = hoursBetween(log.checkInTime, log.checkOutTime);
-                totalHours += h;
-                totalEarnings += log.earnings || 0;
-            }
-        });
-        return { totalHours: Math.round(totalHours * 100) / 100, totalEarnings };
-    }
-    function calcHoursForDay(timeLogs, year, monthZeroBased, date) {
-        let total = 0;
-        (timeLogs || []).forEach(log => {
-            const p = getVNDateParts(log.checkInTime);
-            if (!p || p.year !== year || p.month !== monthZeroBased || p.date !== date) return;
-            const endTime = log.checkOutTime || nowInVNIso();
-            total += hoursBetween(log.checkInTime, endTime);
-        });
-        return Math.round(total * 100) / 100;
-    }
-    function calcHoursForWeek(timeLogs, referenceIso) {
-        const refDate = new Date(new Date(referenceIso).toLocaleString('en-US', { timeZone: VN_TIMEZONE }));
-        const dayOfWeek = refDate.getDay(); // 0 = Sunday
-        const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-        const monday = new Date(refDate);
-        monday.setDate(refDate.getDate() + offset);
-        monday.setHours(0, 0, 0, 0);
 
-        let sum = 0;
-        for (let i = 0; i < 7; i++) {
-            const day = new Date(monday);
-            day.setDate(monday.getDate() + i);
-            sum += calcHoursForDay(timeLogs, day.getFullYear(), day.getMonth(), day.getDate());
-        }
-        return Math.round(sum * 100) / 100;
+    // ====== Theme ======
+    function applyTheme(dark) {
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
     }
-    
-    // ---------- Event Listeners and App Logic ----------
+
+    // ====== Init ======
     document.addEventListener('DOMContentLoaded', () => {
-        loadData();
+      loadData();
 
-        // Global delete listener
-        document.getElementById('appContainer').addEventListener('click', function(event) {
-            const target = event.target.closest('.btn-delete-log');
-            if (target) {
-                handleDeleteLog(target.dataset.logId);
-            }
-        });
-        
-        const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', handleLoginRegister);
+      // Events: Auth
+      document.getElementById('loginBtn').addEventListener('click', handleLoginRegister);
+      document.getElementById('logoutBtn').addEventListener('click', logout);
 
-        document.getElementById('clearDataBtn').addEventListener('click', () => {
-            if (confirm('BẠN CÓ CHẮC MUỐN XÓA TOÀN BỘ DỮ LIỆU? Hành động này không thể hoàn tác.')) {
-                localStorage.removeItem(STORAGE_KEY);
-                appData = { currentUser: null, users: {}, settings: { darkMode: false } };
-                document.getElementById('username').value = '';
-                document.getElementById('password').value = '';
-                showToast('Đã xóa toàn bộ dữ liệu.');
-                updateUI();
-            }
-        });
+      // Events: Tabs
+      document.getElementById('tabDashboardBtn').addEventListener('click', () => showTab('dashboardTab'));
+      document.getElementById('tabReportBtn').addEventListener('click', () => showTab('reportTab'));
+      document.getElementById('tabSettingsBtn').addEventListener('click', () => showTab('settingsTab'));
 
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-        
-        // Tabs
-        document.getElementById('tabDashboardBtn').addEventListener('click', () => showTab('dashboardTab'));
-        document.getElementById('tabReportBtn').addEventListener('click', () => { showTab('reportTab'); document.getElementById('refreshReportBtn').click(); });
-        document.getElementById('tabSettingsBtn').addEventListener('click', () => showTab('settingsTab'));
+      // Events: Core
+      document.getElementById('checkInBtn').addEventListener('click', checkIn);
+      document.getElementById('checkOutBtn').addEventListener('click', checkOut);
+      document.getElementById('addManualBtn').addEventListener('click', addManualLog);
+      document.getElementById('saveWageBtn').addEventListener('click', updateWage);
 
-        // Check-in/out
-        document.getElementById('checkBtn').addEventListener('click', handleCheckInOut);
-        document.getElementById('quickCheckBtn').addEventListener('click', () => handleCheckInOut(true));
+      // Target income
+      document.getElementById('saveTargetBtn').addEventListener('click', () => {
+        const user = getUser(); if (!user) return;
+        const v = parseVNInt(document.getElementById('targetIncome').value);
+        user.settings.targetIncome = v > 0 ? v : 0;
+        saveData();
+        showToast('Đã lưu mục tiêu');
+        renderStats();
+      });
 
-        // Manual log
-        document.getElementById('manualLogForm').addEventListener('submit', handleManualLog);
-        document.getElementById('clearManual').addEventListener('click', () => document.getElementById('manualLogForm').reset());
-        
-        // Backfill
-        const backfillModal = document.getElementById('backfillModal');
-        document.getElementById('backfillBtn').addEventListener('click', () => backfillModal.style.display = 'flex');
-        document.getElementById('cancelBackfill').addEventListener('click', () => backfillModal.style.display = 'none');
-        document.getElementById('backfillForm').addEventListener('submit', handleBackfill);
+      // Report controls
+      document.getElementById('refreshReportBtn').addEventListener('click', generateReport);
+      document.getElementById('reportMonth').addEventListener('change', generateReport);
+      document.getElementById('reportYear').addEventListener('change', generateReport);
+      document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
 
-        // Checkout Note
-        const checkoutModal = document.getElementById('checkoutModal');
-        document.getElementById('cancelCheckout').addEventListener('click', () => checkoutModal.style.display = 'none');
-        document.getElementById('checkoutForm').addEventListener('submit', handleCheckoutNoteSubmit);
+      // Backup/restore
+      document.getElementById('backupBtn').addEventListener('click', backupJSON);
+      document.getElementById('restoreInput').addEventListener('change', (e) => {
+        const f = e.target.files[0];
+        if (f) restoreJSON(f);
+        e.target.value = '';
+      });
 
-        // Report
-        document.getElementById('refreshReportBtn').addEventListener('click', renderReportTable);
-        
-        // Settings
-        document.getElementById('wageForm').addEventListener('submit', handleWageUpdate);
-        document.getElementById('resetWageBtn').addEventListener('click', () => {
-            document.getElementById('newWage').value = DEFAULT_HOURLY_WAGE;
-            handleWageUpdate({ preventDefault: () => {} });
-        });
-        document.getElementById('saveTargetBtn').addEventListener('click', saveTargetAmount);
-        document.getElementById('clearTargetBtn').addEventListener('click', clearTargetAmount);
-        
-        // Dark Mode
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        darkModeToggle.checked = appData.settings.darkMode;
-        darkModeToggle.addEventListener('change', (e) => {
-            appData.settings.darkMode = e.target.checked;
-            applyDarkMode(e.target.checked);
-            saveData();
-        });
-        
-        // Data export/import
-        document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
-        document.getElementById('importJsonFile').addEventListener('change', importJson);
-        document.getElementById('clearAllBtn').addEventListener('click', () => document.getElementById('clearDataBtn').click());
-        document.getElementById('exportCsvBtn').addEventListener('click', () => exportReport('csv'));
-        document.getElementById('exportXlsBtn').addEventListener('click', () => exportReport('xls'));
+      // Settings toggles
+      document.getElementById('reminderToggle').addEventListener('change', (e) => {
+        const user = getUser(); if (!user) return;
+        user.settings.reminders = !!e.target.checked;
+        saveData();
+        updateReminder();
+      });
+      document.getElementById('editToggle').addEventListener('change', (e) => {
+        const user = getUser(); if (!user) return;
+        user.settings.allowEdit = !!e.target.checked;
+        saveData();
+        renderRecent();
+      });
+      document.getElementById('darkToggle').addEventListener('change', (e) => {
+        const user = getUser(); if (!user) return;
+        user.settings.dark = !!e.target.checked;
+        applyTheme(user.settings.dark);
+        saveData();
+        // Re-render chart to adjust colors
+        if (activeTab === 'reportTab') generateReport();
+      });
 
+      // Reminder interval
+      reminderTimer = setInterval(() => {
+        const user = getUser();
+        if (!user?.settings?.reminders) return;
+        updateReminder();
+      }, 60 * 1000);
 
-        if (appData.currentUser && appData.users[appData.currentUser]) {
-            updateUI();
-        } else {
-            showView('loginView');
-        }
+      updateUI();
     });
-    
-    function applyDarkMode(isDark) {
-        document.documentElement.classList.toggle('dark', isDark);
-    }
-
-    // --- Authentication ---
-    function handleLoginRegister(evt) {
-        evt.preventDefault();
-        const username = document.getElementById('username').value.trim().toLowerCase();
-        const password = document.getElementById('password').value;
-        if (!username) return alert('Vui lòng nhập tên đăng nhập.');
-        if (appData.users[username]) {
-            if (appData.users[username].password === password) {
-                appData.currentUser = username;
-                showToast(`Chào mừng trở lại, ${username}!`);
-                updateUI();
-            } else {
-                alert('Mật khẩu không đúng.');
-            }
-        } else {
-            if (!confirm(`Tài khoản "${username}" không tồn tại. Bạn có muốn tạo mới không?`)) return;
-            appData.users[username] = { password: password, hourlyWage: DEFAULT_HOURLY_WAGE, timeLogs: [], targetEarningsPerMonth: null };
-            appData.currentUser = username;
-            showToast('Tạo tài khoản mới thành công!');
-            updateUI();
-        }
-        document.getElementById('password').value = '';
-    }
-
-    function logout() {
-        if (!confirm('Bạn có chắc muốn đăng xuất?')) return;
-        appData.currentUser = null;
-        saveData();
-        updateUI();
-    }
-    
-    // --- Core Actions ---
-    function handleCheckInOut(isQuick = false) {
-        const username = getCurrentUserName();
-        const ud = getUserData(username);
-        const lastLog = ud.timeLogs.length ? ud.timeLogs[ud.timeLogs.length - 1] : null;
-        const isCheckedIn = lastLog && !lastLog.checkOutTime;
-
-        if (isCheckedIn) { // Checking out
-            if (isQuick) {
-                handleCheckoutNoteSubmit({ preventDefault: () => {} }, true); // Quick checkout without note
-            } else {
-                document.getElementById('checkoutModal').style.display = 'flex';
-                document.getElementById('checkoutNote').focus();
-            }
-        } else { // Checking in
-            const newLog = {
-                id: Date.now(),
-                checkInTime: nowInVNIso(),
-                checkOutTime: null,
-                earnings: null,
-                note: null
-            };
-            ud.timeLogs.push(newLog);
-            showToast('CHECK-IN thành công!');
-            updateUI();
-        }
-    }
-
-    function handleCheckoutNoteSubmit(evt, skipNote = false) {
-        evt.preventDefault();
-        const username = getCurrentUserName();
-        const ud = getUserData(username);
-        const lastLog = ud.timeLogs[ud.timeLogs.length - 1];
-        lastLog.checkOutTime = nowInVNIso();
-        if (!skipNote) {
-            lastLog.note = document.getElementById('checkoutNote').value.trim();
-        }
-        lastLog.earnings = Math.round(hoursBetween(lastLog.checkInTime, lastLog.checkOutTime) * ud.hourlyWage);
-        document.getElementById('checkoutModal').style.display = 'none';
-        document.getElementById('checkoutForm').reset();
-        showToast('CHECK-OUT thành công!');
-        updateUI();
-    }
-
-    function handleManualLog(evt) {
-        evt.preventDefault();
-        const date = document.getElementById('manualDate').value;
-        const start = document.getElementById('manualStart').value;
-        const end = document.getElementById('manualEnd').value;
-        if (!date || !start || !end) return alert('Vui lòng nhập đầy đủ ngày giờ.');
-        // Ensure 24h order
-        if (start >= end) {
-            return alert('Giờ kết thúc phải sau giờ bắt đầu.');
-        }
-        const note = document.getElementById('manualNote').value.trim();
-        const startISO = makeIsoFromVnLocal(date, start);
-        const endISO = makeIsoFromVnLocal(date, end);
-
-        const username = getCurrentUserName();
-        const ud = getUserData(username);
-        const earnings = Math.round(hoursBetween(startISO, endISO) * ud.hourlyWage);
-        const newLog = { id: Date.now(), checkInTime: startISO, checkOutTime: endISO, earnings, note };
-        
-        ud.timeLogs.push(newLog);
-        ud.timeLogs.sort((a, b) => new Date(a.checkInTime) - new Date(b.checkInTime));
-        showToast('Đã thêm ca làm thủ công.');
-        evt.target.reset();
-        updateUI();
-    }
-    
-    function handleBackfill(evt) {
-        evt.preventDefault();
-        const date = document.getElementById('backDate').value;
-        const start = document.getElementById('backStart').value;
-        const end = document.getElementById('backEnd').value;
-
-        if (!date || !start) return alert('Vui lòng nhập ngày và giờ bắt đầu.');
-        if (end && start >= end) {
-            return alert('Giờ kết thúc phải sau giờ bắt đầu.');
-        }
-
-        const startISO = makeIsoFromVnLocal(date, start);
-        const endISO = end ? makeIsoFromVnLocal(date, end) : null;
-        
-        const username = getCurrentUserName();
-        const ud = getUserData(username);
-        const earnings = endISO ? Math.round(hoursBetween(startISO, endISO) * ud.hourlyWage) : null;
-        
-        const newLog = { id: Date.now(), checkInTime: startISO, checkOutTime: endISO, earnings, note: 'Ca bù' };
-        
-        ud.timeLogs.push(newLog);
-        ud.timeLogs.sort((a, b) => new Date(a.checkInTime) - new Date(b.checkInTime));
-
-        showToast('Đã bù chấm công thành công.');
-        document.getElementById('backfillForm').reset();
-        document.getElementById('backfillModal').style.display = 'none';
-        updateUI();
-    }
-    
-    // --- Settings Logic ---
-    function handleWageUpdate(evt) {
-        evt.preventDefault();
-        const newWage = parseFloat(document.getElementById('newWage').value);
-        if (isNaN(newWage) || newWage < 0) return alert('Mức lương không hợp lệ.');
-        
-        const username = getCurrentUserName();
-        getUserData(username).hourlyWage = newWage;
-        showToast('Đã cập nhật mức lương.');
-        updateUI();
-    }
-
-    function saveTargetAmount() {
-        const target = parseFloat(document.getElementById('targetAmountInput').value);
-        if (isNaN(target) || target <= 0) {
-            alert('Vui lòng nhập mục tiêu tiền hợp lệ (số lớn hơn 0).');
-            return;
-        }
-        const ud = getUserData(getCurrentUserName());
-        ud.targetEarningsPerMonth = Math.round(target);
-        saveData();
-        showToast('Đã lưu mục tiêu thu nhập tháng.');
-        updateUI();
-    }
-
-    function clearTargetAmount() {
-        const ud = getUserData(getCurrentUserName());
-        ud.targetEarningsPerMonth = null;
-        document.getElementById('targetAmountInput').value = '';
-        saveData();
-        showToast('Đã xóa mục tiêu tháng.');
-        updateUI();
-    }
-
-    // --- Report Logic ---
-    function populateReportPeriodSelector() {
-        const username = getCurrentUserName();
-        const logs = getUserData(username)?.timeLogs || [];
-        const monthSelect = document.getElementById('reportMonth');
-        const yearSelect = document.getElementById('reportYear');
-        
-        const availablePeriods = new Set();
-        logs.forEach(log => {
-            const { year, month } = getVNYearMonthFromIso(log.checkInTime);
-            if (year && month !== null) {
-                availablePeriods.add(`${year}-${String(month + 1).padStart(2, '0')}`);
-            }
-        });
-        
-        const sortedPeriods = Array.from(availablePeriods).sort().reverse();
-        
-        const currentYear = new Date().getFullYear();
-        const years = new Set(sortedPeriods.map(p => p.split('-')[0]));
-        for (let y = currentYear; y > currentYear - 5; y--) years.add(y.toString());
-
-        yearSelect.innerHTML = Array.from(years).sort((a,b) => b-a).map(y => `<option value="${y}">${y}</option>`).join('');
-        monthSelect.innerHTML = Array.from({length: 12}, (_, i) => `<option value="${i}">Tháng ${i + 1}</option>`).join('');
-
-        const nowVN = getVNYearMonthFromIso(new Date().toISOString());
-        monthSelect.value = nowVN.month;
-        yearSelect.value = nowVN.year;
-    }
-
-    function renderReportTable() {
-        const container = document.getElementById('reportTableContainer');
-        const month = parseInt(document.getElementById('reportMonth').value);
-        const year = parseInt(document.getElementById('reportYear').value);
-        const ud = getUserData(getCurrentUserName());
-        const logs = ud.timeLogs.filter(log => {
-            const parts = getVNYearMonthFromIso(log.checkInTime);
-            return parts.year === year && parts.month === month;
-        });
-
-        if (logs.length === 0) {
-            container.innerHTML = '<p class="muted">Không có dữ liệu cho tháng đã chọn.</p>';
-            return;
-        }
-        
-        const trashSVG = `<svg class="delete-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3V2h11v1h-11z"/></svg>`;
-        let totalHours = 0, totalEarnings = 0;
-        let tableHTML = `
-            <table>
-                <thead><tr><th>Ngày</th><th>Check-in</th><th>Check-out</th><th>Số giờ</th><th>Thu nhập</th><th>Ghi chú</th><th>Thao tác</th></tr></thead>
-                <tbody>`;
-        logs.forEach(log => {
-            const hours = log.checkOutTime ? hoursBetween(log.checkInTime, log.checkOutTime) : 0;
-            const earnings = log.earnings || 0;
-            totalHours += hours;
-            totalEarnings += earnings;
-            tableHTML += `
-                <tr>
-                    <td>${formatDateLocal(log.checkInTime)}</td>
-                    <td>${formatDateTimeLocal(log.checkInTime)}</td>
-                    <td>${log.checkOutTime ? formatDateTimeLocal(log.checkOutTime) : '-'}</td>
-                    <td>${hours.toFixed(2)}</td>
-                    <td>${formatCurrency(earnings)}</td>
-                    <td>${log.note ? escapeHtml(log.note) : ''}</td>
-                    <td><button class="btn-danger btn-icon btn-delete-log" data-log-id="${log.id}" title="Xóa">${trashSVG}</button></td>
-                </tr>
-            `;
-        });
-        tableHTML += `</tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3" class="text-right"><strong>Tổng cộng</strong></td>
-                    <td><strong>${totalHours.toFixed(2)} giờ</strong></td>
-                    <td colspan="3"><strong>${formatCurrency(totalEarnings)}</strong></td>
-                </tr>
-            </tfoot>
-        </table>`;
-        container.innerHTML = tableHTML;
-    }
-    
-    // --- Data Management (Export/Import) ---
-    function exportJson() {
-        const username = getCurrentUserName();
-        if (!username) return;
-        const dataStr = JSON.stringify({ [username]: getUserData(username) }, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cham-cong-backup-${username}-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('Đã xuất file backup JSON.');
-    }
-    
-    function importJson(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                const username = Object.keys(data)[0];
-                if (!username || !data[username].timeLogs) {
-                    throw new Error('Invalid file format');
-                }
-                if (confirm(`Bạn có chắc muốn nhập dữ liệu cho người dùng "${username}"? Dữ liệu hiện tại của người dùng này sẽ bị ghi đè.`)) {
-                    appData.users[username] = data[username];
-                    if (!appData.currentUser) appData.currentUser = username;
-                    saveData();
-                    showToast('Nhập dữ liệu thành công!');
-                    updateUI();
-                }
-            } catch (err) {
-                alert('Lỗi: File JSON không hợp lệ hoặc không đúng định dạng.');
-                console.error(err);
-            } finally {
-                event.target.value = '';
-            }
-        };
-        reader.readAsText(file);
-    }
-    
-    function exportReport(format) {
-        const month = parseInt(document.getElementById('reportMonth').value);
-        const year = parseInt(document.getElementById('reportYear').value);
-        const ud = getUserData(getCurrentUserName());
-        const logs = ud.timeLogs.filter(log => {
-            const parts = getVNYearMonthFromIso(log.checkInTime);
-            return parts.year === year && parts.month === month;
-        });
-
-        if (logs.length === 0) {
-            return alert('Không có dữ liệu để xuất.');
-        }
-
-        const headers = ["Ngày", "Check-in", "Check-out", "Số giờ", "Thu nhập (VND)", "Ghi chú"];
-        const rows = logs.map(log => {
-            const hours = log.checkOutTime ? hoursBetween(log.checkInTime, log.checkOutTime) : 0;
-            const earnings = log.earnings || 0;
-            return [
-                formatDateLocal(log.checkInTime),
-                formatDateTimeLocal(log.checkInTime),
-                log.checkOutTime ? formatDateTimeLocal(log.checkOutTime) : '',
-                hours.toFixed(2),
-                earnings,
-                log.note || ''
-            ];
-        });
-
-        let content = headers.join(',') + '\n';
-        rows.forEach(row => {
-            content += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
-        });
-
-        const blob = new Blob([content], { type: `text/${format};charset=utf-8;` });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `bao-cao-cham-cong-${getCurrentUserName()}-${year}-${month+1}.${format}`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
   </script>
 </body>
 </html>
