@@ -854,7 +854,7 @@
                         <div class="stats-amount" id="monthEarnings">0 VNĐ</div>
                     </div>
                     <div class="stats-card">
-                        <h4>🎯 Mục tiêu tháng</h4>
+                        <h4>🎯 Mục tiêu thu nhập</h4>
                         <div class="stats-amount" id="goalProgress">0%</div>
                         <div class="progress-bar">
                             <div class="progress-fill" id="progressFill" style="width: 0%"></div>
@@ -974,8 +974,8 @@
                     <h3>🎯 Mục tiêu làm việc</h3>
                     <form id="goalForm">
                         <div class="form-group">
-                            <label for="monthlyGoal">Mục tiêu giờ làm/tháng:</label>
-                            <input type="number" id="monthlyGoal" min="1" max="744" required placeholder="Ví dụ: 160">
+                            <label for="monthlyGoal">Mục tiêu thu nhập/tháng (VNĐ):</label>
+                            <input type="number" id="monthlyGoal" min="100000" step="100000" required placeholder="Ví dụ: 4000000">
                         </div>
                         <button type="submit" class="btn">Lưu mục tiêu</button>
                     </form>
@@ -1251,8 +1251,8 @@
             document.getElementById('monthEarnings').textContent = formatCurrency(monthStats.earnings);
             
             // Goal progress
-            const monthlyGoal = user.monthlyGoal || 160;
-            const progress = Math.min((monthStats.hours / monthlyGoal) * 100, 100);
+            const monthlyGoal = user.monthlyGoal || 4000000;
+            const progress = Math.min((monthStats.earnings / monthlyGoal) * 100, 100);
             document.getElementById('goalProgress').textContent = `${progress.toFixed(1)}%`;
             document.getElementById('progressFill').style.width = `${progress}%`;
         }
@@ -1401,7 +1401,7 @@
                 appData.users[username] = {
                     password: password,
                     hourlyWage: 25000,
-                    monthlyGoal: 160,
+                    monthlyGoal: 4000000,
                     timeLogs: [],
                     settings: {
                         reminders: false,
@@ -1785,8 +1785,8 @@
         function handleGoalUpdate() {
             const newGoal = parseInt(document.getElementById('monthlyGoal').value);
             
-            if (!newGoal || newGoal < 1 || newGoal > 744) {
-                showToast('Vui lòng nhập mục tiêu hợp lệ (1-744 giờ)!', 'error');
+            if (!newGoal || newGoal < 100000) {
+                showToast('Vui lòng nhập mục tiêu hợp lệ (tối thiểu 100,000 VNĐ)!', 'error');
                 return;
             }
             
@@ -1796,7 +1796,7 @@
             saveData();
             updateUI();
             
-            showToast('Mục tiêu đã được cập nhật!');
+            showToast('Mục tiêu thu nhập đã được cập nhật!');
         }
 
         function handleReminderSettings() {
@@ -1956,5 +1956,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'983308be42360f2c',t:'MTc1ODU1NzAyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9833514fb34a045b',t:'MTc1ODU1OTk5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
