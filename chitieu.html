@@ -673,6 +673,57 @@
                     <div class="stat-value balance" id="balance">0 ₫</div>
                     <div class="stat-label">Số Dư</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="savingsGoal" style="color: var(--primary-color);">0 ₫</div>
+                    <div class="stat-label">Mục tiêu tiết kiệm</div>
+                </div>
+            </div>
+
+            <!-- Mục tiêu tiết kiệm -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <h3 class="card-title">🎯 Mục tiêu Tiết kiệm Tháng này</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label class="form-label" for="savingsGoalInput">Mục tiêu tiết kiệm (VNĐ)</label>
+                        <input type="number" id="savingsGoalInput" class="form-input" min="0" placeholder="Nhập mục tiêu tiết kiệm">
+                    </div>
+                    <div style="display: flex; align-items: end;">
+                        <button onclick="setSavingsGoal()" class="btn btn-primary" style="width: 100%;">Đặt mục tiêu</button>
+                    </div>
+                </div>
+                
+                <div id="savingsProgress" style="display: none;">
+                    <div style="background: var(--surface-color); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 500;">Tiến độ tiết kiệm</span>
+                            <span id="savingsPercentage" style="font-weight: 600; color: var(--primary-color);">0%</span>
+                        </div>
+                        <div style="background: var(--border-color); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div id="savingsProgressBar" style="background: linear-gradient(90deg, var(--primary-color), var(--success-color)); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-color); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);" id="currentSavings">0 ₫</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Đã tiết kiệm</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-color); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);" id="remainingSavings">0 ₫</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Còn lại</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-color); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);" id="daysRemaining">0</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Ngày còn lại</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-color); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--danger-color);" id="dailySavingsNeeded">0 ₫</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Cần tiết kiệm/ngày</div>
+                        </div>
+                    </div>
+                    
+                    <div id="savingsStatus" style="margin-top: 1rem; padding: 1rem; border-radius: 0.5rem; text-align: center; font-weight: 500;"></div>
+                </div>
             </div>
 
             <div class="grid">
@@ -816,6 +867,28 @@
 
 
 
+            <!-- Mục tiêu tiết kiệm -->
+            <div class="settings-section">
+                <h3 class="settings-section-title">🎯 Mục tiêu tiết kiệm</h3>
+                <div class="settings-item">
+                    <div class="settings-item-info">
+                        <div class="settings-item-title">Mục tiêu tháng này</div>
+                        <div class="settings-item-desc">Đặt mục tiêu tiết kiệm cho tháng hiện tại</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="number" id="settingsSavingsGoal" class="form-input" style="width: 150px;" min="0" placeholder="0">
+                        <button onclick="setSavingsGoalFromSettings()" class="btn btn-primary btn-sm">Đặt mục tiêu</button>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-item-info">
+                        <div class="settings-item-title">Xóa mục tiêu</div>
+                        <div class="settings-item-desc">Xóa mục tiêu tiết kiệm hiện tại</div>
+                    </div>
+                    <button onclick="clearSavingsGoal()" class="btn btn-danger btn-sm">Xóa mục tiêu</button>
+                </div>
+            </div>
+
             <!-- Giao diện -->
             <div class="settings-section">
                 <h3 class="settings-section-title">🎨 Giao diện</h3>
@@ -913,6 +986,7 @@
         let editingId = null;
         let lastDeletedTransaction = null;
         let undoTimeout = null;
+        let currentSavingsGoal = 0;
 
         // Khởi tạo ứng dụng
         function init() {
@@ -946,6 +1020,16 @@
                 saveData();
             }
             filteredTransactions = [...transactions];
+            
+            // Load savings goal
+            const savedGoal = localStorage.getItem('savingsGoal');
+            if (savedGoal) {
+                currentSavingsGoal = parseInt(savedGoal) || 0;
+                if (currentSavingsGoal > 0) {
+                    document.getElementById('savingsGoalInput').value = currentSavingsGoal;
+                    showSavingsProgress();
+                }
+            }
         }
 
         // Lưu dữ liệu vào localStorage
@@ -1279,6 +1363,16 @@
 
         // Calculate statistics
         function calculateStats() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            // Filter transactions for current month
+            const currentMonthTransactions = transactions.filter(t => {
+                const transactionDate = new Date(t.date);
+                return transactionDate.getMonth() === currentMonth && 
+                       transactionDate.getFullYear() === currentYear;
+            });
+            
             const income = filteredTransactions
                 .filter(t => t.type === 'Thu')
                 .reduce((sum, t) => sum + t.amount, 0);
@@ -1287,10 +1381,24 @@
                 .filter(t => t.type === 'Chi')
                 .reduce((sum, t) => sum + t.amount, 0);
             
+            // Calculate current month savings (income - expense for current month)
+            const monthlyIncome = currentMonthTransactions
+                .filter(t => t.type === 'Thu')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const monthlyExpense = currentMonthTransactions
+                .filter(t => t.type === 'Chi')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const currentSavings = monthlyIncome - monthlyExpense;
+            
             return {
                 income,
                 expense,
-                balance: income - expense
+                balance: income - expense,
+                currentSavings: Math.max(0, currentSavings), // Only positive savings count
+                monthlyIncome,
+                monthlyExpense
             };
         }
 
@@ -1301,6 +1409,12 @@
             document.getElementById('totalIncome').textContent = formatCurrency(stats.income);
             document.getElementById('totalExpense').textContent = formatCurrency(stats.expense);
             document.getElementById('balance').textContent = formatCurrency(stats.balance);
+            document.getElementById('savingsGoal').textContent = formatCurrency(currentSavingsGoal);
+            
+            // Update savings progress if goal is set
+            if (currentSavingsGoal > 0) {
+                updateSavingsProgress(stats);
+            }
         }
 
         // Render transaction list
@@ -1750,6 +1864,12 @@
             if (themeBtn) {
                 themeBtn.textContent = currentTheme === 'dark' ? '☀️ Bật chế độ sáng' : '🌙 Bật chế độ tối';
             }
+            
+            // Update savings goal input
+            const savingsGoalInput = document.getElementById('settingsSavingsGoal');
+            if (savingsGoalInput) {
+                savingsGoalInput.value = currentSavingsGoal || '';
+            }
         }
 
         // CSV Export function
@@ -1938,6 +2058,111 @@
             }
         }
 
+        // Savings Goal Functions
+        function setSavingsGoal() {
+            const goalInput = document.getElementById('savingsGoalInput');
+            const goal = parseInt(goalInput.value);
+            
+            if (!goal || goal <= 0) {
+                showNotificationBanner('❌ Vui lòng nhập mục tiêu hợp lệ!', 'error');
+                return;
+            }
+            
+            currentSavingsGoal = goal;
+            localStorage.setItem('savingsGoal', goal.toString());
+            
+            showSavingsProgress();
+            renderStats();
+            showNotificationBanner('🎯 Đã đặt mục tiêu tiết kiệm thành công!', 'success');
+        }
+        
+        function setSavingsGoalFromSettings() {
+            const goalInput = document.getElementById('settingsSavingsGoal');
+            const goal = parseInt(goalInput.value);
+            
+            if (!goal || goal <= 0) {
+                showErrorToast('Vui lòng nhập mục tiêu hợp lệ!');
+                return;
+            }
+            
+            currentSavingsGoal = goal;
+            localStorage.setItem('savingsGoal', goal.toString());
+            
+            // Update main form
+            document.getElementById('savingsGoalInput').value = goal;
+            
+            showSavingsProgress();
+            renderStats();
+            showSuccessToast('Đã đặt mục tiêu tiết kiệm thành công!');
+        }
+        
+        function clearSavingsGoal() {
+            if (confirm('Bạn có chắc chắn muốn xóa mục tiêu tiết kiệm không?')) {
+                currentSavingsGoal = 0;
+                localStorage.removeItem('savingsGoal');
+                
+                document.getElementById('savingsGoalInput').value = '';
+                document.getElementById('settingsSavingsGoal').value = '';
+                document.getElementById('savingsProgress').style.display = 'none';
+                
+                renderStats();
+                showSuccessToast('Đã xóa mục tiêu tiết kiệm!');
+            }
+        }
+        
+        function showSavingsProgress() {
+            document.getElementById('savingsProgress').style.display = 'block';
+            const stats = calculateStats();
+            updateSavingsProgress(stats);
+        }
+        
+        function updateSavingsProgress(stats) {
+            const currentSavings = stats.currentSavings;
+            const remaining = Math.max(0, currentSavingsGoal - currentSavings);
+            const percentage = Math.min(100, (currentSavings / currentSavingsGoal) * 100);
+            
+            // Calculate days remaining in current month
+            const now = new Date();
+            const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const daysRemaining = lastDayOfMonth - now.getDate();
+            
+            // Calculate daily savings needed
+            const dailySavingsNeeded = daysRemaining > 0 ? Math.ceil(remaining / daysRemaining) : 0;
+            
+            // Update UI elements
+            document.getElementById('currentSavings').textContent = formatCurrency(currentSavings);
+            document.getElementById('remainingSavings').textContent = formatCurrency(remaining);
+            document.getElementById('daysRemaining').textContent = daysRemaining;
+            document.getElementById('dailySavingsNeeded').textContent = formatCurrency(dailySavingsNeeded);
+            document.getElementById('savingsPercentage').textContent = Math.round(percentage) + '%';
+            document.getElementById('savingsProgressBar').style.width = percentage + '%';
+            
+            // Update status message
+            const statusEl = document.getElementById('savingsStatus');
+            let statusMessage = '';
+            let statusClass = '';
+            
+            if (percentage >= 100) {
+                statusMessage = '🎉 Chúc mừng! Bạn đã đạt được mục tiêu tiết kiệm tháng này!';
+                statusClass = 'background: var(--success-color); color: white;';
+            } else if (percentage >= 75) {
+                statusMessage = '💪 Tuyệt vời! Bạn đã gần đạt được mục tiêu rồi!';
+                statusClass = 'background: var(--primary-color); color: white;';
+            } else if (percentage >= 50) {
+                statusMessage = '👍 Tốt lắm! Bạn đã hoàn thành được một nửa mục tiêu!';
+                statusClass = 'background: var(--warning-color); color: white;';
+            } else if (daysRemaining <= 5 && percentage < 50) {
+                statusMessage = '⚠️ Cần cố gắng hơn! Chỉ còn ít ngày để đạt mục tiêu!';
+                statusClass = 'background: var(--danger-color); color: white;';
+            } else {
+                statusMessage = `📈 Bạn cần tiết kiệm ${formatCurrency(dailySavingsNeeded)}/ngày để đạt mục tiêu!`;
+                statusClass = 'background: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color);';
+            }
+            
+            statusEl.textContent = statusMessage;
+            statusEl.style.cssText = statusClass;
+        }
+
         // Enhanced theme toggle with settings update
         function toggleTheme() {
             const body = document.body;
@@ -1988,5 +2213,5 @@
             setupKeyboardShortcuts();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9843d403058403df',t:'MTc1ODczMzEyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9843dbdf45690574',t:'MTc1ODczMzQ0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
