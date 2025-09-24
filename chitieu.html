@@ -48,44 +48,66 @@
             padding: 0 1rem;
         }
 
-        /* Banner */
-        .banner {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 8px 12px;
-            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
-            color: #2d3436;
-            display: flex;
-            justify-content: center;
-            position: sticky;
+        /* Notification Banner */
+        .notification-banner {
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1001;
-            border-bottom: 1px solid #fdcb6e;
+            padding: 12px;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease-in-out;
         }
 
-        .banner-inner {
+        .notification-banner.show {
+            transform: translateY(0);
+        }
+
+        .notification-banner.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .notification-banner.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .notification-banner.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .notification-banner.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .notification-content {
             max-width: 1200px;
-            width: 100%;
+            margin: 0 auto;
             display: flex;
             align-items: center;
-            gap: 12px;
             justify-content: space-between;
+            gap: 1rem;
             font-size: 14px;
+            font-weight: 500;
         }
 
-        .banner button {
+        .notification-content button {
             background: transparent;
-            border: 0;
+            border: none;
+            color: inherit;
             font-size: 18px;
             cursor: pointer;
-            color: #2d3436;
-            padding: 2px 6px;
+            padding: 4px 8px;
             border-radius: 50%;
             transition: background-color 0.3s;
         }
 
-        .banner button:hover {
-            background: rgba(45, 52, 54, 0.1);
+        .notification-content button:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         /* Header */
@@ -348,11 +370,69 @@
             transform: translateY(100px);
             opacity: 0;
             transition: all 0.3s;
+            min-width: 300px;
+            max-width: 400px;
         }
 
         .toast.show {
             transform: translateY(0);
             opacity: 1;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .toast.loading {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toast-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--warning-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Performance optimizations */
+        .transaction-item {
+            will-change: transform;
+        }
+
+        .transaction-item.new {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         /* Help */
@@ -487,28 +567,7 @@
             color: var(--text-muted);
         }
 
-        .storage-info {
-            background: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
 
-        .storage-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--border-color);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 0.5rem 0;
-        }
-
-        .storage-fill {
-            height: 100%;
-            background: var(--primary-color);
-            transition: width 0.3s;
-        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -563,11 +622,11 @@
     </style>
 </head>
 <body>
-    <!-- Banner thông báo -->
-    <div id="topBanner" role="banner" aria-live="polite" class="banner">
-        <div class="banner-inner">
-            <span>💡 <strong>Nhắc nhở:</strong> Hôm nay là ngày 15 - hạn thanh toán tiền thuê nhà. Đừng quên kiểm tra mục "Nhà ở"!</span>
-            <button id="closeBannerBtn" aria-label="Đóng thông báo" title="Đóng (sẽ hiện lại khi tải trang)">×</button>
+    <!-- Banner thông báo động -->
+    <div id="notificationBanner" class="notification-banner" style="display: none;">
+        <div class="notification-content">
+            <span id="notificationMessage"></span>
+            <button id="closeNotificationBtn" onclick="hideNotificationBanner()">×</button>
         </div>
     </div>
 
@@ -734,8 +793,13 @@
         </div>
     </main>
 
-    <!-- Toast cho undo -->
-    <div id="undoToast" class="toast">
+    <!-- Toast container -->
+    <div id="toastContainer" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;">
+        <!-- Toasts will be dynamically added here -->
+    </div>
+
+    <!-- Undo toast template (hidden) -->
+    <div id="undoToast" class="toast" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
             <span>Đã xóa giao dịch</span>
             <button onclick="undoDelete()" class="btn btn-sm btn-primary">Hoàn tác</button>
@@ -750,22 +814,7 @@
                 <button class="modal-close" onclick="closeSettings()" aria-label="Đóng cài đặt">×</button>
             </div>
 
-            <!-- Thông tin lưu trữ -->
-            <div class="settings-section">
-                <h3 class="settings-section-title">💾 Thông tin lưu trữ</h3>
-                <div class="storage-info">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Dung lượng đã sử dụng:</span>
-                        <span id="storageUsed">0 KB</span>
-                    </div>
-                    <div class="storage-bar">
-                        <div class="storage-fill" id="storageFill" style="width: 0%"></div>
-                    </div>
-                    <div style="font-size: 0.875rem; color: var(--text-muted);">
-                        Tổng số giao dịch: <span id="totalTransactions">0</span>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Giao diện -->
             <div class="settings-section">
@@ -985,7 +1034,7 @@
             return Object.keys(errors).length === 0;
         }
 
-        // Handle form submission
+        // Handle form submission with real-time updates
         function handleFormSubmit(e) {
             e.preventDefault();
             
@@ -1001,12 +1050,15 @@
             
             if (editingId) {
                 updateTransaction(editingId, formData);
+                showNotificationBanner('✅ Đã cập nhật giao dịch thành công!', 'success');
             } else {
                 addTransaction(formData);
+                showNotificationBanner('✅ Đã thêm giao dịch mới thành công!', 'success');
             }
             
             resetForm();
-            renderAll();
+            updateFilteredTransactions();
+            renderAllOptimized();
         }
 
         // Add new transaction
@@ -1029,21 +1081,105 @@
             }
         }
 
-        // Delete transaction
+        // Delete transaction with real-time updates
         function deleteTransaction(id) {
             const index = transactions.findIndex(t => t.id === id);
             if (index !== -1) {
                 lastDeletedTransaction = { ...transactions[index], index };
                 transactions.splice(index, 1);
                 saveData();
+                showNotificationBanner('🗑️ Đã xóa giao dịch thành công!', 'warning');
                 showUndoToast();
-                renderAll();
+                updateFilteredTransactions();
+                renderAllOptimized();
             }
+        }
+
+        // Toast system
+        let toastCounter = 0;
+
+        function createToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toastId = `toast-${++toastCounter}`;
+            
+            const toast = document.createElement('div');
+            toast.id = toastId;
+            toast.className = `toast ${type}`;
+            toast.style.pointerEvents = 'auto';
+            
+            let icon = '💡';
+            switch (type) {
+                case 'success': icon = '✅'; break;
+                case 'error': icon = '❌'; break;
+                case 'loading': icon = ''; break;
+                case 'info': icon = 'ℹ️'; break;
+            }
+            
+            toast.innerHTML = `
+                <div class="toast-content">
+                    ${type === 'loading' ? '<div class="toast-spinner"></div>' : icon}
+                    <span>${message}</span>
+                    ${type !== 'loading' ? '<button onclick="removeToast(\'' + toastId + '\')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0 0 0 0.5rem;">×</button>' : ''}
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+            
+            // Auto remove (except loading toasts)
+            if (type !== 'loading' && duration > 0) {
+                setTimeout(() => {
+                    removeToast(toastId);
+                }, duration);
+            }
+            
+            return toastId;
+        }
+
+        function removeToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }
+
+        function showSuccessToast(message) {
+            return createToast(message, 'success', 4000);
+        }
+
+        function showErrorToast(message) {
+            return createToast(message, 'error', 5000);
+        }
+
+        function showInfoToast(message) {
+            return createToast(message, 'info', 3000);
+        }
+
+        function showLoadingToast(message) {
+            return createToast(message, 'loading', 0);
+        }
+
+        function hideLoadingToast() {
+            // Remove all loading toasts
+            const loadingToasts = document.querySelectorAll('.toast.loading');
+            loadingToasts.forEach(toast => {
+                removeToast(toast.id);
+            });
         }
 
         // Show undo toast
         function showUndoToast() {
             const toast = document.getElementById('undoToast');
+            toast.style.display = 'block';
             toast.classList.add('show');
             
             if (undoTimeout) clearTimeout(undoTimeout);
@@ -1053,11 +1189,15 @@
         }
 
         function hideUndoToast() {
-            document.getElementById('undoToast').classList.remove('show');
-            lastDeletedTransaction = null;
+            const toast = document.getElementById('undoToast');
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.style.display = 'none';
+                lastDeletedTransaction = null;
+            }, 300);
         }
 
-        // Undo delete
+        // Undo delete with real-time updates
         function undoDelete() {
             if (lastDeletedTransaction) {
                 transactions.splice(lastDeletedTransaction.index, 0, {
@@ -1070,7 +1210,9 @@
                 });
                 saveData();
                 hideUndoToast();
-                renderAll();
+                updateFilteredTransactions();
+                renderAllOptimized();
+                showSuccessToast('Đã khôi phục giao dịch thành công!');
             }
         }
 
@@ -1105,43 +1247,23 @@
         // Cancel edit
         document.getElementById('cancelEdit').addEventListener('click', resetForm);
 
-        // Apply filters
+        // Apply filters with real-time updates
         function applyFilters() {
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo = document.getElementById('filterDateTo').value;
-            const category = document.getElementById('filterCategory').value;
-            const sortBy = document.getElementById('sortBy').value;
-            
-            filteredTransactions = transactions.filter(t => {
-                if (dateFrom && t.date < dateFrom) return false;
-                if (dateTo && t.date > dateTo) return false;
-                if (category && t.category !== category) return false;
-                return true;
-            });
-            
-            // Sort
-            filteredTransactions.sort((a, b) => {
-                switch (sortBy) {
-                    case 'date-asc': return new Date(a.date) - new Date(b.date);
-                    case 'date-desc': return new Date(b.date) - new Date(a.date);
-                    case 'amount-asc': return a.amount - b.amount;
-                    case 'amount-desc': return b.amount - a.amount;
-                    default: return 0;
-                }
-            });
-            
-            renderAll();
+            updateFilteredTransactions();
+            renderAllOptimized();
+            showNotificationBanner('🔍 Đã áp dụng bộ lọc', 'info');
         }
 
-        // Clear filters
+        // Clear filters with real-time updates
         function clearFilters() {
             document.getElementById('filterDateFrom').value = '';
             document.getElementById('filterDateTo').value = '';
             document.getElementById('filterCategory').value = '';
             document.getElementById('sortBy').value = 'date-desc';
             
-            filteredTransactions = [...transactions];
-            renderAll();
+            updateFilteredTransactions();
+            renderAllOptimized();
+            showNotificationBanner('🔄 Đã xóa bộ lọc', 'info');
         }
 
         // Format currency
@@ -1355,12 +1477,100 @@
             });
         }
 
-        // Render all components
+        // Optimized render functions
+        let renderTimeout = null;
+        let isRendering = false;
+
         function renderAll() {
             renderStats();
             renderTransactionList();
             renderMonthlyChart();
             renderCategoryChart();
+        }
+
+        // Optimized render with debouncing
+        function renderAllOptimized() {
+            if (renderTimeout) {
+                clearTimeout(renderTimeout);
+            }
+            
+            renderTimeout = setTimeout(() => {
+                if (!isRendering) {
+                    isRendering = true;
+                    requestAnimationFrame(() => {
+                        renderStats();
+                        renderTransactionListOptimized();
+                        renderMonthlyChart();
+                        renderCategoryChart();
+                        isRendering = false;
+                    });
+                }
+            }, 16); // ~60fps
+        }
+
+        // Update filtered transactions without full re-render
+        function updateFilteredTransactions() {
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+            const category = document.getElementById('filterCategory').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            filteredTransactions = transactions.filter(t => {
+                if (dateFrom && t.date < dateFrom) return false;
+                if (dateTo && t.date > dateTo) return false;
+                if (category && t.category !== category) return false;
+                return true;
+            });
+            
+            // Sort
+            filteredTransactions.sort((a, b) => {
+                switch (sortBy) {
+                    case 'date-asc': return new Date(a.date) - new Date(b.date);
+                    case 'date-desc': return new Date(b.date) - new Date(a.date);
+                    case 'amount-asc': return a.amount - b.amount;
+                    case 'amount-desc': return b.amount - a.amount;
+                    default: return 0;
+                }
+            });
+        }
+
+        // Optimized transaction list rendering
+        function renderTransactionListOptimized() {
+            const container = document.getElementById('transactionList');
+            
+            if (filteredTransactions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Không có giao dịch nào</p>';
+                return;
+            }
+            
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            filteredTransactions.forEach((t, index) => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                if (index === 0) item.classList.add('new'); // Animate new items
+                
+                item.innerHTML = `
+                    <div class="transaction-info">
+                        <div class="transaction-amount ${t.type === 'Thu' ? 'income' : 'expense'}">
+                            ${t.type === 'Thu' ? '+' : '-'}${formatCurrency(t.amount)}
+                        </div>
+                        <div class="transaction-details">
+                            ${formatDate(t.date)} • ${t.category} ${t.note ? '• ' + t.note : ''}
+                        </div>
+                    </div>
+                    <div class="transaction-actions">
+                        <button onclick="editTransaction('${t.id}')" class="btn btn-sm btn-secondary" title="Sửa">✏️</button>
+                        <button onclick="deleteTransaction('${t.id}')" class="btn btn-sm btn-danger" title="Xóa">🗑️</button>
+                    </div>
+                `;
+                
+                fragment.appendChild(item);
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(fragment);
         }
 
         // Theme toggle
@@ -1405,12 +1615,16 @@
             document.body.removeChild(a);
             
             URL.revokeObjectURL(url);
+            showNotificationBanner(`📤 Đã xuất thành công ${transactions.length} giao dịch ra file JSON!`, 'success');
         }
 
-        // Import data
+        // Import data with real-time updates
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
+            
+            // Show loading indicator
+            showLoadingToast('Đang nhập dữ liệu...');
             
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1418,24 +1632,49 @@
                     const data = JSON.parse(e.target.result);
                     
                     if (data.transactions && Array.isArray(data.transactions)) {
-                        if (confirm('Bạn có muốn ghi đè dữ liệu hiện tại không? (Chọn Cancel để hợp nhất)')) {
+                        const shouldOverwrite = confirm('Bạn có muốn ghi đè dữ liệu hiện tại không? (Chọn Cancel để hợp nhất)');
+                        
+                        if (shouldOverwrite) {
                             transactions = data.transactions;
                         } else {
-                            // Merge data
+                            // Merge data with animation
                             const existingIds = new Set(transactions.map(t => t.id));
                             const newTransactions = data.transactions.filter(t => !existingIds.has(t.id));
-                            transactions = [...transactions, ...newTransactions];
+                            
+                            // Add new transactions one by one with animation
+                            newTransactions.forEach((transaction, index) => {
+                                setTimeout(() => {
+                                    transactions.unshift(transaction);
+                                    saveData();
+                                    updateFilteredTransactions();
+                                    renderAllOptimized();
+                                    
+                                    if (index === newTransactions.length - 1) {
+                                        hideLoadingToast();
+                                        showNotificationBanner(`📥 Đã nhập thành công ${newTransactions.length} giao dịch mới!`, 'success');
+                                    }
+                                }, index * 50); // Stagger animations
+                            });
+                            
+                            if (newTransactions.length === 0) {
+                                hideLoadingToast();
+                                showNotificationBanner('ℹ️ Không có giao dịch mới để thêm', 'info');
+                            }
+                            return;
                         }
                         
                         saveData();
-                        filteredTransactions = [...transactions];
-                        renderAll();
-                        alert('Dữ liệu đã được nhập thành công!');
+                        updateFilteredTransactions();
+                        renderAllOptimized();
+                        hideLoadingToast();
+                        showNotificationBanner('✅ Dữ liệu đã được nhập thành công!', 'success');
                     } else {
-                        alert('File không đúng định dạng!');
+                        hideLoadingToast();
+                        showNotificationBanner('❌ File không đúng định dạng!', 'error');
                     }
                 } catch (error) {
-                    alert('Lỗi khi đọc file: ' + error.message);
+                    hideLoadingToast();
+                    showNotificationBanner('❌ Lỗi khi đọc file: ' + error.message, 'error');
                 }
             };
             
@@ -1443,16 +1682,45 @@
             event.target.value = ''; // Reset input
         }
 
-        // Banner functionality
-        function initBanner() {
-            const closeBannerBtn = document.getElementById('closeBannerBtn');
-            const banner = document.getElementById('topBanner');
+        // Notification Banner System
+        let bannerTimeout = null;
+
+        function showNotificationBanner(message, type = 'info', duration = 4000) {
+            const banner = document.getElementById('notificationBanner');
+            const messageEl = document.getElementById('notificationMessage');
             
-            if (closeBannerBtn && banner) {
-                closeBannerBtn.addEventListener('click', () => {
-                    banner.style.display = 'none';
-                    // Không lưu trạng thái -> sẽ hiện lại khi reload
-                });
+            // Clear existing timeout
+            if (bannerTimeout) {
+                clearTimeout(bannerTimeout);
+            }
+            
+            // Set message and type
+            messageEl.textContent = message;
+            banner.className = `notification-banner ${type}`;
+            
+            // Show banner
+            banner.style.display = 'block';
+            requestAnimationFrame(() => {
+                banner.classList.add('show');
+            });
+            
+            // Auto hide after duration
+            bannerTimeout = setTimeout(() => {
+                hideNotificationBanner();
+            }, duration);
+        }
+
+        function hideNotificationBanner() {
+            const banner = document.getElementById('notificationBanner');
+            banner.classList.remove('show');
+            
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 300);
+            
+            if (bannerTimeout) {
+                clearTimeout(bannerTimeout);
+                bannerTimeout = null;
             }
         }
 
@@ -1476,20 +1744,12 @@
         }
 
         function updateSettingsInfo() {
-            // Update storage info
-            const dataSize = new Blob([localStorage.getItem(CONFIG.STORAGE_KEY) || '']).size;
-            const sizeKB = (dataSize / 1024).toFixed(2);
-            const maxSize = 5 * 1024; // 5MB limit for localStorage
-            const percentage = Math.min((dataSize / (maxSize * 1024)) * 100, 100);
-            
-            document.getElementById('storageUsed').textContent = `${sizeKB} KB`;
-            document.getElementById('storageFill').style.width = `${percentage}%`;
-            document.getElementById('totalTransactions').textContent = transactions.length;
-            
             // Update theme button
             const currentTheme = document.body.getAttribute('data-theme');
             const themeBtn = document.getElementById('themeToggleBtn');
-            themeBtn.textContent = currentTheme === 'dark' ? '☀️ Bật chế độ sáng' : '🌙 Bật chế độ tối';
+            if (themeBtn) {
+                themeBtn.textContent = currentTheme === 'dark' ? '☀️ Bật chế độ sáng' : '🌙 Bật chế độ tối';
+            }
         }
 
         // CSV Export function
@@ -1575,38 +1835,76 @@
                 throw new Error('Không tìm thấy dữ liệu hợp lệ trong file CSV');
             }
             
-            if (confirm(`Tìm thấy ${newTransactions.length} giao dịch. Bạn có muốn ghi đè dữ liệu hiện tại không? (Chọn Cancel để hợp nhất)`)) {
+            const shouldOverwrite = confirm(`Tìm thấy ${newTransactions.length} giao dịch. Bạn có muốn ghi đè dữ liệu hiện tại không? (Chọn Cancel để hợp nhất)`);
+            
+            if (shouldOverwrite) {
                 transactions = newTransactions;
+                saveData();
+                updateFilteredTransactions();
+                renderAllOptimized();
+                updateSettingsInfo();
+                showSuccessToast('Dữ liệu CSV đã được nhập thành công!');
             } else {
                 const existingIds = new Set(transactions.map(t => t.id));
                 const uniqueTransactions = newTransactions.filter(t => !existingIds.has(t.id));
-                transactions = [...transactions, ...uniqueTransactions];
+                
+                // Add new transactions with animation
+                uniqueTransactions.forEach((transaction, index) => {
+                    setTimeout(() => {
+                        transactions.unshift(transaction);
+                        saveData();
+                        updateFilteredTransactions();
+                        renderAllOptimized();
+                        
+                        if (index === uniqueTransactions.length - 1) {
+                            updateSettingsInfo();
+                            showSuccessToast(`Đã nhập thành công ${uniqueTransactions.length} giao dịch mới từ CSV!`);
+                        }
+                    }, index * 50);
+                });
+                
+                if (uniqueTransactions.length === 0) {
+                    showInfoToast('Không có giao dịch mới để thêm từ CSV');
+                }
             }
-            
-            saveData();
-            filteredTransactions = [...transactions];
-            renderAll();
-            updateSettingsInfo();
-            alert('Dữ liệu CSV đã được nhập thành công!');
         }
 
         function importJSON(jsonContent) {
             const data = JSON.parse(jsonContent);
             
             if (data.transactions && Array.isArray(data.transactions)) {
-                if (confirm('Bạn có muốn ghi đè dữ liệu hiện tại không? (Chọn Cancel để hợp nhất)')) {
+                const shouldOverwrite = confirm('Bạn có muốn ghi đè dữ liệu hiện tại không? (Chọn Cancel để hợp nhất)');
+                
+                if (shouldOverwrite) {
                     transactions = data.transactions;
+                    saveData();
+                    updateFilteredTransactions();
+                    renderAllOptimized();
+                    updateSettingsInfo();
+                    showSuccessToast('Dữ liệu JSON đã được nhập thành công!');
                 } else {
                     const existingIds = new Set(transactions.map(t => t.id));
                     const newTransactions = data.transactions.filter(t => !existingIds.has(t.id));
-                    transactions = [...transactions, ...newTransactions];
+                    
+                    // Add new transactions with animation
+                    newTransactions.forEach((transaction, index) => {
+                        setTimeout(() => {
+                            transactions.unshift(transaction);
+                            saveData();
+                            updateFilteredTransactions();
+                            renderAllOptimized();
+                            
+                            if (index === newTransactions.length - 1) {
+                                updateSettingsInfo();
+                                showSuccessToast(`Đã nhập thành công ${newTransactions.length} giao dịch mới từ JSON!`);
+                            }
+                        }, index * 50);
+                    });
+                    
+                    if (newTransactions.length === 0) {
+                        showInfoToast('Không có giao dịch mới để thêm từ JSON');
+                    }
                 }
-                
-                saveData();
-                filteredTransactions = [...transactions];
-                renderAll();
-                updateSettingsInfo();
-                alert('Dữ liệu JSON đã được nhập thành công!');
             } else {
                 throw new Error('File JSON không đúng định dạng');
             }
@@ -1687,9 +1985,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
             init();
-            initBanner();
             setupKeyboardShortcuts();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'983b5ba28161df9d',t:'MTc1ODY0NDMwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9843d403058403df',t:'MTc1ODczMzEyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
